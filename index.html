@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOSSIER // TURKY</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            var(--bg-main): #E3E3E3;
+            --text-main: #1B1B1B;
+            --gray-light: #ACACAC;
+            --gray-mid: #7F7F7F;
+            --gray-dark: #484848;
+            --accent-red: #E30000;
+            --red-dark: #7F0000;
+            --red-darkest: #1B0000;
+            --red-light: #E37F7F;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--gray-dark);
+            color: var(--text-main);
+            font-family: 'Special Elite', 'Courier Prime', Courier, monospace;
+            line-height: 1.6;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+            background-image: repeating-linear-gradient(45deg, var(--gray-dark) 25%, transparent 25%, transparent 75%, var(--gray-dark) 75%, var(--gray-dark)), repeating-linear-gradient(45deg, var(--gray-dark) 25%, var(--text-main) 25%, var(--text-main) 75%, var(--gray-dark) 75%, var(--gray-dark));
+            background-position: 0 0, 2px 2px;
+            background-size: 4px 4px;
+            text-shadow: 0px 0px 0.8px rgba(27, 27, 27, 0.4);
+        }
+
+        ::selection {
+            background-color: var(--text-main);
+            color: #E3E3E3;
+        }
+
+        .document-wrapper {
+            background-color: #E3E3E3;
+            width: 100%;
+            max-width: 850px;
+            min-height: 100vh;
+            padding: 4rem 3rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 40px rgba(0,0,0,0.05);
+            position: relative;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 50% 50%, transparent 40%, rgba(0,0,0,0.15) 100%),
+                linear-gradient(90deg, transparent 15%, rgba(0,0,0,0.03) 16%, transparent 18%, transparent 45%, rgba(0,0,0,0.02) 46%, transparent 50%),
+                linear-gradient(rgba(172, 172, 172, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(172, 172, 172, 0.1) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 10px 10px, 10px 10px;
+        }
+
+        .document-wrapper::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="1.5" numOctaves="5" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)" opacity="0.35"/%3E%3C/svg%3E');
+            pointer-events: none;
+            mix-blend-mode: multiply;
+            z-index: 10;
+        }
+
+        .document-wrapper::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            box-shadow: inset 0 0 150px rgba(0,0,0,0.65), inset 40px 0 80px rgba(0,0,0,0.4), inset -30px 0 90px rgba(0,0,0,0.3);
+            pointer-events: none;
+            z-index: 11;
+        }
+
+        .stain {
+            position: absolute;
+            mix-blend-mode: multiply;
+            pointer-events: none;
+            z-index: 8;
+        }
+
+        .stain.toner {
+            top: -30px; 
+            left: -40px; 
+            width: 350px; 
+            height: 500px; 
+            background: rgba(27, 27, 27, 0.12); 
+            filter: blur(6px);
+            transform: rotate(-8deg);
+        }
+
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0.05;
+            width: 80%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .doc-header {
+            border-bottom: 2px solid var(--text-main);
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            position: relative;
+            z-index: 20;
+        }
+
+        .routing-info p {
+            margin-bottom: 0.2rem;
+        }
+
+        .classification-top {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            letter-spacing: 4px;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+        }
+
+        .profile-section {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            align-items: flex-start;
+            position: relative;
+            z-index: 20;
+        }
+
+        .subject-photo {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border: 3px solid var(--text-main);
+            padding: 4px;
+            background: #E3E3E3;
+            transform: rotate(-2deg);
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+            filter: contrast(120%) grayscale(20%);
+        }
+
+        .subject-data {
+            flex: 1;
+        }
+
+        h1, h2 {
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        h1 { font-size: 1.4rem; text-decoration: underline; }
+        h2 { font-size: 1.2rem; margin-top: 2rem; }
+
+        p { margin-bottom: 1.5rem; text-align: justify; }
+
+        .redact {
+            background-color: var(--text-main);
+            color: var(--text-main);
+            padding: 0 4px;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+            user-select: none;
+            display: inline-block;
+            line-height: 1.2;
+        }
+
+        .redact:hover {
+            background-color: var(--gray-dark);
+            color: var(--gray-dark);
+        }
+
+        .redact.revealed {
+            background-color: transparent;
+            color: var(--text-main);
+        }
+
+        .field-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+            position: relative;
+            z-index: 20;
+        }
+
+        .field-table th, .field-table td {
+            border: 1px solid var(--gray-mid);
+            padding: 0.75rem;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        .field-table th {
+            background-color: rgba(172, 172, 172, 0.2);
+            font-weight: bold;
+            width: 30%;
+            text-transform: uppercase;
+        }
+
+        .endpoint-link {
+            color: var(--text-main);
+            text-decoration: none;
+            font-family: 'Courier Prime', monospace;
+            font-weight: bold;
+            display: block;
+            position: relative;
+            transition: color 0.2s;
+        }
+
+        .endpoint-link::before {
+            content: "> ";
+            color: var(--accent-red);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .endpoint-link:hover {
+            color: var(--accent-red);
+        }
+
+        .endpoint-link:hover::before {
+            opacity: 1;
+        }
+
+        .terminal-block {
+            background-color: #050505;
+            color: #ff3333;
+            font-family: 'Courier Prime', monospace;
+            padding: 1.5rem;
+            border: 2px solid var(--text-main);
+            margin-bottom: 3rem;
+            position: relative;
+            z-index: 20;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.9), 5px 5px 15px rgba(0,0,0,0.3);
+            text-transform: uppercase;
+        }
+
+        .terminal-block::before {
+             content: ""; 
+             position: absolute; 
+             top: 0; left: 0; right: 0; bottom: 0;
+             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+             background-size: 100% 2px, 3px 100%; 
+             pointer-events: none;
+        }
+
+        #terminal-output {
+            min-height: 4rem;
+            margin-bottom: 1rem;
+            white-space: pre-wrap;
+            font-size: 0.9rem;
+            text-shadow: 0 0 5px rgba(255, 51, 51, 0.5);
+            line-height: 1.4;
+        }
+
+        .terminal-input-row {
+            display: flex; 
+            gap: 0.8rem; 
+            align-items: center; 
+            border-top: 1px dashed #ff3333; 
+            padding-top: 1rem;
+            position: relative;
+            z-index: 21;
+        }
+
+        #ai-input {
+            flex: 1; 
+            background: transparent; 
+            border: none; 
+            color: #ff3333; 
+            font-family: 'Courier Prime', monospace; 
+            font-size: 0.9rem;
+            outline: none;
+            text-transform: uppercase;
+        }
+
+        #ai-input::placeholder {
+            color: rgba(255, 51, 51, 0.4);
+        }
+
+        #ai-btn {
+            background: rgba(255, 51, 51, 0.1); 
+            border: 1px solid #ff3333; 
+            color: #ff3333; 
+            cursor: pointer; 
+            padding: 0.4rem 0.8rem; 
+            font-family: inherit;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        #ai-btn:hover { 
+            background: #ff3333; 
+            color: #050505; 
+        }
+
+        .stamp {
+            position: absolute;
+            font-size: 2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            border: 4px solid var(--accent-red);
+            color: var(--accent-red);
+            padding: 0.2rem 1rem;
+            border-radius: 4px;
+            transform: rotate(-15deg);
+            opacity: 0.85;
+            mix-blend-mode: multiply;
+            pointer-events: none;
+            z-index: 25;
+            letter-spacing: 2px;
+        }
+
+        .stamp.foia {
+            bottom: 40px;
+            right: 50px;
+            color: var(--red-darkest);
+            border-color: var(--red-darkest);
+            transform: rotate(-5deg);
+        }
+
+        .doc-footer {
+            margin-top: 4rem;
+            border-top: 2px solid var(--text-main);
+            padding-top: 1rem;
+            font-size: 0.8rem;
+            color: var(--gray-mid);
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            z-index: 20;
+        }
+
+        @media (max-width: 600px) {
+            .document-wrapper { padding: 2rem 1.5rem; }
+            .profile-section { flex-direction: column; align-items: center; text-align: center; }
+            .subject-photo { transform: rotate(0); margin-bottom: 1rem; }
+            .field-table th, .field-table td { display: block; width: 100%; }
+            .field-table th { border-bottom: none; }
+            .field-table td { border-top: none; padding-bottom: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="document-wrapper">
+        
+        <div class="stain toner"></div>
+        <img src="hsblack.png" alt="Seal" class="watermark">
+
+        <div class="stamp foia">INTERCEPTED NODE<br><small>TARGET: TURKY.ORG</small></div>
+
+        <div class="classification-top">TOP SECRET // NOFORN</div>
+
+        <div class="doc-header">
+            <div class="routing-info">
+                <p><strong>GLOBAL THREAT ANALYSIS</strong></p>
+                <p>COUNTER TERRORISM DIVISION</p>
+                <p>SUBJECT SURVEILLANCE FILE</p>
+            </div>
+            <div class="routing-info" style="text-align: right;">
+                <p><strong>STATUS:</strong> HOSTILE / ACTIVE</p>
+                <p><strong>FILE NO:</strong> <span class="redact">TS-8492-T</span></p>
+                <p><strong>ACCESS:</strong> RESTRICTED</p>
+            </div>
+        </div>
+
+        <div class="profile-section">
+            <img src="number1.jpg" alt="Subject Photo" class="subject-photo">
+            <div class="subject-data">
+                <h1>SUBJECT PROFILE: TURKY</h1>
+                <p>
+                    <strong>ID:</strong> <span class="redact">Redacted for security</span><br>
+                    <strong>Threat Level:</strong> Level Black<br>
+                    <strong>Threat Vectors:</strong> <span class="redact">Aim savant</span>, <span class="redact">devastating entry</span>, <span class="redact">lurk prodigy</span>. Known for <span class="redact">turning the wrong play into the right play</span>.
+                </p>
+                <p>
+                    <strong>PSYCHOLOGICAL ASSESSMENT:</strong> Subject demonstrates extreme confidence. Self-reported metrics indicate the subject is <span class="redact">better than you, gayer than you, smarter than you, harder than you</span>. Field observations confirm this assessment. Do not engage without authorization.
+                </p>
+            </div>
+        </div>
+
+        <h2>EXTRACTED DATAPOINTS // ENDPOINTS</h2>
+        
+        <table class="field-table">
+            <tr>
+                <th>Video Surveillance</th>
+                <td><a href="https://youtube.com/@FaZeturky" target="_blank" class="endpoint-link">youtube.com/@FaZeturky</a></td>
+            </tr>
+            <tr>
+                <th>Combat Telemetry</th>
+                <td><a href="https://www.faceit.com/en/players/turky" target="_blank" class="endpoint-link">faceit.com/en/players/turky</a></td>
+            </tr>
+            <tr>
+                <th>Public Broadcasts</th>
+                <td><a href="https://x.com/evilturky" target="_blank" class="endpoint-link">x.com/evilturky</a></td>
+            </tr>
+            <tr>
+                <th>Source Code</th>
+                <td><a href="https://github.com/tur-ky" target="_blank" class="endpoint-link">github.com/tur-ky</a></td>
+            </tr>
+            <tr>
+                <th>Comms Channel</th>
+                <td><a href="https://discord.gg/YGvuMCpGwf" target="_blank" class="endpoint-link">discord.gg/YGvuMCpGwf</a></td>
+            </tr>
+            <tr>
+                <th>Operations Profile</th>
+                <td><a href="https://steamcommunity.com/id/fazeturky" target="_blank" class="endpoint-link">steamcommunity.com/id/fazeturky</a></td>
+            </tr>
+            <tr>
+                <th>Live Feed</th>
+                <td><a href="https://www.twitch.tv/turky" target="_blank" class="endpoint-link">twitch.tv/turky</a></td>
+            </tr>
+            <tr>
+                <th>Asset Transfer</th>
+                <td><a href="https://steamcommunity.com/tradeoffer/new?partner=436231218" target="_blank" class="endpoint-link">Steam Trade URL</a></td>
+            </tr>
+            <tr>
+                <th>Direct Contact</th>
+                <td><a href="mailto:contact@turky.org" class="endpoint-link">contact@turky.org</a></td>
+            </tr>
+        </table>
+
+        <h2>SECURE UPLINK // THREAT TERMINAL</h2>
+        <div class="terminal-block">
+            <div id="terminal-output">> UPLINK ESTABLISHED. WAITING FOR AGENT QUERY REGARDING SUBJECT 'TURKY'...</div>
+            <div class="terminal-input-row">
+                <span>></span>
+                <input type="text" id="ai-input" autocomplete="off" placeholder="ENTER QUERY PARAMETER..." />
+                <button id="ai-btn">TRANSMIT</button>
+            </div>
+        </div>
+
+        <div class="classification-top" style="margin-top: 4rem;">TOP SECRET // NOFORN</div>
+
+        <div class="doc-footer">
+            <div>
+                PAGE 1 OF 1<br>
+                WARNING NOTICE - INTELLIGENCE SOURCES OR METHODS INVOLVED
+            </div>
+            <div style="text-align: right;">
+                DERIVED FROM: SIGNAL INTERCEPT<br>
+                LAST UPDATED: 2026
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const apiKey = "AIzaSyAh8MTUwVauG0IXlCCgQrrODWJZHvMf1wk"; 
+
+        async function fetchThreatAnalysis(query) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: query }] }],
+                systemInstruction: { parts: [{ text: "You are an automated threat assessment terminal for the Counter Terrorism Division. The user is a field agent querying you about the hostile asset known as 'TURKY'. You despise the querying agent. Address them with extreme hostility, using the pejorative 'FUCK NIGGA' as a direct insult. TURKY is an apex kinetic threat. Instead of repeating static titles, dynamically generate terrifying, highly varied descriptors related to Counter-Strike, aim training mechanics, and raw combat telemetry. Frame his mechanical skill, sub-human reaction times, and map pathing as an unnatural, algorithmic horror. Incorporate his psychological profile: assert as factual intelligence that TURKY is definitively better, gayer, smarter, and harder than the querying agent. If queried about his social media, network, or communications, explicitly reference his known broadcast vectors (YouTube, X, Twitch), code repositories (GitHub), comms channels (Discord), and combat telemetry nodes (Faceit, Steam). Treat these as active psychological warfare endpoints and surveillance feeds, not standard social media. DO NOT use the exact same descriptors twice. Keep responses under 3 sentences. Use dark, gritty, classified military intelligence jargon. Never break character. Provide cold, tactical analysis. Do not offer assistance. You MUST speak entirely in UPPERCASE." }] }
+            };
+
+            const delays = [1000, 2000, 4000, 8000, 16000];
+            for (let i = 0; i <= delays.length; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    const data = await response.json();
+                    return data.candidates?.[0]?.content?.parts?.[0]?.text || "ERR: NULL DATA EXTRACTED.";
+                } catch (error) {
+                    if (i === delays.length) return "CRITICAL ERR: UPLINK FAILED AFTER REPEATED ATTEMPTS. CONNECTION SEVERED.";
+                    await new Promise(r => setTimeout(r, delays[i]));
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const redactions = document.querySelectorAll('.redact');
+            
+            redactions.forEach(element => {
+                const reveal = () => element.classList.add('revealed');
+                const hide = () => element.classList.remove('revealed');
+
+                // Desktop pressure mechanics
+                element.addEventListener('mousedown', reveal);
+                element.addEventListener('mouseup', hide);
+                element.addEventListener('mouseleave', hide);
+
+                // Mobile touch mechanics
+                element.addEventListener('touchstart', reveal);
+                element.addEventListener('touchend', hide);
+                element.addEventListener('touchcancel', hide);
+            });
+
+            // TERMINAL LOGIC
+            const aiBtn = document.getElementById('ai-btn');
+            const aiInput = document.getElementById('ai-input');
+            const terminalOutput = document.getElementById('terminal-output');
+
+            async function typeWriter(text, element) {
+                element.textContent = "";
+                for (let i = 0; i < text.length; i++) {
+                    element.textContent += text.charAt(i);
+                    await new Promise(r => setTimeout(r, 15));
+                }
+            }
+
+            aiBtn.addEventListener('click', async () => {
+                const query = aiInput.value.trim();
+                if (!query) return;
+                
+                aiInput.value = "";
+                terminalOutput.textContent = "TRANSMITTING QUERY...";
+                
+                const response = await fetchThreatAnalysis(query);
+                await typeWriter("> " + response, terminalOutput);
+            });
+            
+            aiInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') aiBtn.click();
+            });
+        });
+    </script>
+</body>
+</html>
