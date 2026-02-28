@@ -241,78 +241,6 @@
             opacity: 1;
         }
 
-        .terminal-block {
-            background-color: #050505;
-            color: #ff3333;
-            font-family: 'Courier Prime', monospace;
-            padding: 1.5rem;
-            border: 2px solid var(--text-main);
-            margin-bottom: 3rem;
-            position: relative;
-            z-index: 20;
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.9), 5px 5px 15px rgba(0,0,0,0.3);
-            text-transform: uppercase;
-        }
-
-        .terminal-block::before {
-             content: ""; 
-             position: absolute; 
-             top: 0; left: 0; right: 0; bottom: 0;
-             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-             background-size: 100% 2px, 3px 100%; 
-             pointer-events: none;
-        }
-
-        #terminal-output {
-            min-height: 4rem;
-            margin-bottom: 1rem;
-            white-space: pre-wrap;
-            font-size: 0.9rem;
-            text-shadow: 0 0 5px rgba(255, 51, 51, 0.5);
-            line-height: 1.4;
-        }
-
-        .terminal-input-row {
-            display: flex; 
-            gap: 0.8rem; 
-            align-items: center; 
-            border-top: 1px dashed #ff3333; 
-            padding-top: 1rem;
-            position: relative;
-            z-index: 21;
-        }
-
-        #ai-input {
-            flex: 1; 
-            background: transparent; 
-            border: none; 
-            color: #ff3333; 
-            font-family: 'Courier Prime', monospace; 
-            font-size: 0.9rem;
-            outline: none;
-            text-transform: uppercase;
-        }
-
-        #ai-input::placeholder {
-            color: rgba(255, 51, 51, 0.4);
-        }
-
-        #ai-btn {
-            background: rgba(255, 51, 51, 0.1); 
-            border: 1px solid #ff3333; 
-            color: #ff3333; 
-            cursor: pointer; 
-            padding: 0.4rem 0.8rem; 
-            font-family: inherit;
-            font-weight: bold;
-            transition: all 0.2s;
-        }
-
-        #ai-btn:hover { 
-            background: #ff3333; 
-            color: #050505; 
-        }
-
         .stamp {
             position: absolute;
             font-size: 2rem;
@@ -464,33 +392,7 @@
         </div>
 
     </div>
-
-    <script>
-        const apiKey = "AIzaSyAh8MTUwVauG0IXlCCgQrrODWJZHvMf1wk"; 
-
-        async function fetchThreatAnalysis(query) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-            const payload = {
-                contents: [{ parts: [{ text: query }] }],
-                systemInstruction: { parts: [{ text: "You are an automated threat assessment terminal for the Counter Terrorism Division. The user is a field agent querying you about the hostile asset known as 'TURKY'. You despise the querying agent. Address them with extreme hostility, using the pejorative 'FUCK NIGGA' as a direct insult. TURKY is an apex kinetic threat. Instead of repeating static titles, dynamically generate terrifying, highly varied descriptors related to Counter-Strike, aim training mechanics, and raw combat telemetry. Frame his mechanical skill, sub-human reaction times, and map pathing as an unnatural, algorithmic horror. Incorporate his psychological profile: assert as factual intelligence that TURKY is definitively better, gayer, smarter, and harder than the querying agent. If queried about his social media, network, or communications, explicitly reference his known broadcast vectors (YouTube, X, Twitch), code repositories (GitHub), comms channels (Discord), and combat telemetry nodes (Faceit, Steam). Treat these as active psychological warfare endpoints and surveillance feeds, not standard social media. DO NOT use the exact same descriptors twice. Keep responses under 3 sentences. Use dark, gritty, classified military intelligence jargon. Never break character. Provide cold, tactical analysis. Do not offer assistance. You MUST speak entirely in UPPERCASE." }] }
-            };
-
-            const delays = [1000, 2000, 4000, 8000, 16000];
-            for (let i = 0; i <= delays.length; i++) {
-                try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                    const data = await response.json();
-                    return data.candidates?.[0]?.content?.parts?.[0]?.text || "ERR: NULL DATA EXTRACTED.";
-                } catch (error) {
-                    if (i === delays.length) return "CRITICAL ERR: UPLINK FAILED AFTER REPEATED ATTEMPTS. CONNECTION SEVERED.";
-                    await new Promise(r => setTimeout(r, delays[i]));
-                }
-            }
+            
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -510,38 +412,11 @@
                 element.addEventListener('touchend', hide);
                 element.addEventListener('touchcancel', hide);
             });
-
-            // TERMINAL LOGIC
-            const aiBtn = document.getElementById('ai-btn');
-            const aiInput = document.getElementById('ai-input');
-            const terminalOutput = document.getElementById('terminal-output');
-
-            async function typeWriter(text, element) {
-                element.textContent = "";
-                for (let i = 0; i < text.length; i++) {
-                    element.textContent += text.charAt(i);
-                    await new Promise(r => setTimeout(r, 15));
-                }
-            }
-
-            aiBtn.addEventListener('click', async () => {
-                const query = aiInput.value.trim();
-                if (!query) return;
-                
-                aiInput.value = "";
-                terminalOutput.textContent = "TRANSMITTING QUERY...";
-                
-                const response = await fetchThreatAnalysis(query);
-                await typeWriter("> " + response, terminalOutput);
-            });
-            
-            aiInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') aiBtn.click();
-            });
         });
     </script>
 </body>
 
 </html>
+
 
 
