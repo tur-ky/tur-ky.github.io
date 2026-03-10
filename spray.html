@@ -20,7 +20,7 @@
     <div class="box wide">
       <a class="back" href="index.html">< RETURN TO DOSSIER</a>
       <h1>KINETIC TELEMETRY // CS2 SPRAY LAB</h1>
-      <p>Click to lock the mouse, then hold left click to spray. The camera uses the actual sensitivity value derived from either CS2 sensitivity plus DPI or your chosen cm/360.</p>
+      <p>Press L to lock the mouse, then hold left click to spray. The camera uses the actual sensitivity value derived from either CS2 sensitivity plus DPI or your chosen cm/360.</p>
       <div class="mode"><button class="btn active" id="mode-sens" type="button">SENS + DPI</button><button class="btn" id="mode-cm" type="button">CM / 360</button></div>
       <div class="grid2">
         <div>
@@ -71,7 +71,7 @@
     <div class="box mid">
       <h2>DRILL NOTES</h2>
       <p>Accuracy is computed from bullets that intersect the bot before the wall. Bullet impacts clear when a new spray begins so the current attempt stays readable.</p>
-      <div class="stat">MOUSE LOCK <span>CLICK BANNER OR CANVAS</span></div>
+      <div class="stat">MOUSE LOCK <span>PRESS L</span></div>
       <div class="stat">SPRAY <span>HOLD LEFT MOUSE</span></div>
       <div class="stat">RELEASE LOCK <span>ESC</span></div>
       <div class="stat">BOT RANGE <span>10.5 UNITS</span></div>
@@ -79,7 +79,7 @@
     </div>
   </div>
 </div>
-<div id="banner">&gt; CLICK TO LOCK MOUSE AND START TRAINING<br><small>LEFT CLICK AND HOLD TO SPRAY, ESC TO RELEASE POINTER LOCK</small></div>
+<div id="banner">&gt; PRESS L TO LOCK MOUSE AND START TRAINING<br><small>LEFT CLICK AND HOLD TO SPRAY, ESC TO RELEASE POINTER LOCK</small></div>
 <script>
 const RAD_SCALE=.0012,M_YAW=.022,DEG_TO_RAD=Math.PI/180;
 const weapons={ak47:{name:"AK-47",rpm:600,mag:30,pattern:[{x:0,y:0},{x:2,y:25},{x:-5,y:50},{x:-10,y:75},{x:-15,y:100},{x:-20,y:125},{x:-28,y:140},{x:-35,y:150},{x:-40,y:160},{x:-40,y:165},{x:-30,y:170},{x:-15,y:175},{x:5,y:175},{x:25,y:170},{x:45,y:165},{x:60,y:160},{x:75,y:155},{x:80,y:150},{x:75,y:145},{x:60,y:145},{x:40,y:150},{x:20,y:155},{x:0,y:160},{x:-20,y:165},{x:-40,y:165},{x:-60,y:160},{x:-75,y:155},{x:-85,y:150},{x:-90,y:145},{x:-95,y:140}].map(p=>({x:p.x*RAD_SCALE,y:p.y*RAD_SCALE}))},m4a4:{name:"M4A4",rpm:666,mag:30,pattern:[{x:0,y:0},{x:0,y:20},{x:-2,y:40},{x:-5,y:60},{x:-10,y:75},{x:-15,y:90},{x:-22,y:105},{x:-30,y:115},{x:-35,y:125},{x:-40,y:130},{x:-35,y:135},{x:-25,y:140},{x:-10,y:140},{x:5,y:140},{x:20,y:135},{x:35,y:130},{x:45,y:125},{x:50,y:120},{x:45,y:115},{x:35,y:115},{x:20,y:120},{x:5,y:125},{x:-10,y:130},{x:-25,y:130},{x:-40,y:125},{x:-55,y:120},{x:-65,y:115},{x:-70,y:110},{x:-75,y:105},{x:-80,y:100}].map(p=>({x:p.x*RAD_SCALE,y:p.y*RAD_SCALE}))},m4a1s:{name:"M4A1-S",rpm:600,mag:20,pattern:[{x:0,y:0},{x:0,y:15},{x:-2,y:30},{x:-4,y:45},{x:-8,y:60},{x:-12,y:70},{x:-18,y:80},{x:-22,y:85},{x:-25,y:90},{x:-22,y:95},{x:-15,y:95},{x:-5,y:95},{x:5,y:95},{x:15,y:95},{x:25,y:90},{x:30,y:85},{x:32,y:80},{x:28,y:80},{x:20,y:85},{x:10,y:85}].map(p=>({x:p.x*RAD_SCALE,y:p.y*RAD_SCALE}))}};
@@ -124,11 +124,11 @@ function applyCrosshair(){const c=rgb(crosshairColor()),color=`rgba(${c.r}, ${c.
 function syncCrosshair(){xh.preset=xhPreset.value;xh.custom=xhCustom.value;xh.alpha=clamp(num(xhAlpha.value,xh.alpha),.1,1);xh.gap=clamp(num(xhGap.value,xh.gap),0,20);xh.length=clamp(num(xhLength.value,xh.length),2,28);xh.thickness=clamp(num(xhThickness.value,xh.thickness),1,8);xh.dotSize=clamp(num(xhDotSize.value,xh.dotSize),1,10);xh.outlineSize=clamp(num(xhOutlineSize.value,xh.outlineSize),0,4);xh.dot=xhDot.checked;xh.outline=xhOutline.checked;xh.tStyle=xhTStyle.checked;xhAlpha.value=xh.alpha.toFixed(2);xhGap.value=String(xh.gap);xhLength.value=String(xh.length);xhThickness.value=String(xh.thickness);xhDotSize.value=String(xh.dotSize);xhOutlineSize.value=String(xh.outlineSize);applyCrosshair()}
 function resetCrosshair(){Object.assign(xh,xhDefaults);xhPreset.value=xh.preset;xhCustom.value=xh.custom;xhAlpha.value=xh.alpha.toFixed(2);xhGap.value=String(xh.gap);xhLength.value=String(xh.length);xhThickness.value=String(xh.thickness);xhDotSize.value=String(xh.dotSize);xhOutlineSize.value=String(xh.outlineSize);xhDot.checked=xh.dot;xhOutline.checked=xh.outline;xhTStyle.checked=xh.tStyle;applyCrosshair()}
 modeSens.addEventListener("click",()=>setMode("sens"));modeCm.addEventListener("click",()=>setMode("cm"));inpSens.addEventListener("input",syncSensitivity);inpDpi.addEventListener("input",syncSensitivity);inpCm.addEventListener("input",syncSensitivity);weaponButtons.forEach(btn=>btn.addEventListener("click",()=>switchWeapon(btn.dataset.weapon)));[xhPreset,xhCustom,xhAlpha,xhGap,xhLength,xhThickness,xhDotSize,xhOutlineSize,xhDot,xhOutline,xhTStyle].forEach(el=>{el.addEventListener("input",syncCrosshair);el.addEventListener("change",syncCrosshair)});xhReset.addEventListener("click",resetCrosshair);
-banner.addEventListener("click",requestLock);renderer.domElement.addEventListener("click",()=>{if(!state.locked)requestLock()});
-document.addEventListener("pointerlockchange",()=>{state.locked=document.pointerLockElement===renderer.domElement;if(state.locked){banner.style.display="none";state.inputStatus=state.pendingLockMode}else{banner.style.display="block";state.inputStatus="WAITING FOR POINTER LOCK";setBanner("&gt; CLICK TO LOCK MOUSE AND START TRAINING<br><small>LEFT CLICK AND HOLD TO SPRAY, ESC TO RELEASE POINTER LOCK</small>",false);stopShooting()}updateHud()});
+document.addEventListener("keydown",e=>{if(e.repeat||e.code!=="KeyL")return;const tag=document.activeElement&&document.activeElement.tagName?document.activeElement.tagName:"";if(tag==="INPUT"||tag==="SELECT"||tag==="TEXTAREA"||document.activeElement?.isContentEditable)return;if(!state.locked)requestLock()});
+document.addEventListener("pointerlockchange",()=>{state.locked=document.pointerLockElement===renderer.domElement;if(state.locked){banner.style.display="none";state.inputStatus=state.pendingLockMode}else{banner.style.display="block";state.inputStatus="WAITING FOR POINTER LOCK";setBanner("&gt; PRESS L TO LOCK MOUSE AND START TRAINING<br><small>LEFT CLICK AND HOLD TO SPRAY, ESC TO RELEASE POINTER LOCK</small>",false);stopShooting()}updateHud()});
 document.addEventListener("pointerlockerror",()=>{state.inputStatus="LOCK REQUEST BLOCKED";updateHud();setBanner("&gt; POINTER LOCK REQUEST FAILED<br><small>OPEN THIS PAGE DIRECTLY IN ITS OWN TAB OR WINDOW</small>",true)});
 document.addEventListener("mousemove",e=>{if(!state.locked)return;const r=radiansPerCount();state.baseYaw-=e.movementX*r;state.basePitch-=e.movementY*r;state.basePitch=clamp(state.basePitch,-Math.PI/2,Math.PI/2)});
-document.addEventListener("mousedown",e=>{if(e.button!==0)return;if(!state.locked){requestLock();return}startShooting()});
+document.addEventListener("mousedown",e=>{if(e.button!==0||!state.locked)return;startShooting()});
 document.addEventListener("mouseup",e=>{if(e.button===0)stopShooting()});
 window.addEventListener("resize",()=>{camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight);renderer.setPixelRatio(Math.min(window.devicePixelRatio,2))});
 syncSensitivity();resetCrosshair();switchWeapon("ak47");
@@ -138,3 +138,4 @@ animate();
 </script>
 </body>
 </html>
+
