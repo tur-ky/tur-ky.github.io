@@ -131,6 +131,20 @@
             margin-bottom: 0.2rem;
         }
 
+        /* --- HYPERLINK INJECTION --- */
+        .terminal-link {
+            color: var(--text-main);
+            text-decoration: none;
+            display: inline-block;
+            transition: color 0.2s, text-shadow 0.2s;
+            cursor: pointer;
+        }
+        
+        .terminal-link:hover {
+            color: var(--accent-red);
+            text-shadow: 0 0 8px rgba(227, 0, 0, 0.6);
+        }
+
         .classification-top {
             text-align: center;
             font-size: 1.5rem;
@@ -382,7 +396,7 @@
 
         <div class="doc-header">
             <div class="routing-info">
-                <p><strong>GLOBAL THREAT ANALYSIS</strong></p>
+                <p><strong><a href="spray.html" class="terminal-link">[ACCESS KINETIC SIMULATOR]</a></strong></p>
                 <p>COUNTER TERRORISM DIVISION</p>
                 <p>SUBJECT SURVEILLANCE FILE</p>
             </div>
