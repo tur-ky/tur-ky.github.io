@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CS2 Aim Trainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#050505;--panel:rgba(5,5,5,.88);--green:#0f0;--white:#e3e3e3;--red:#ff5454;--muted:#96b896;--font:"Courier Prime",monospace}*{box-sizing:border-box;margin:0;padding:0;user-select:none}html,body{width:100%;height:100%;overflow:hidden}body{font-family:var(--font);background:radial-gradient(circle at top,rgba(0,255,0,.06),transparent 35%),linear-gradient(180deg,#060806,#040404);color:var(--green);text-shadow:0 0 4px rgba(0,255,0,.45)}#trainer-stage,#trainer-canvas,#crt{position:absolute;inset:0}#crt{pointer-events:none;z-index:10;background:linear-gradient(rgba(18,16,16,0) 50%,rgba(0,0,0,.24) 50%),linear-gradient(90deg,rgba(255,0,0,.06),rgba(0,255,0,.02),rgba(0,0,255,.06));background-size:100% 2px,3px 100%}#ui{position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;justify-content:space-between;gap:14px;padding:16px;pointer-events:none}.row{display:flex;gap:14px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap}.box{min-width:280px;max-width:100%;background:var(--panel);border:1px solid var(--green);box-shadow:0 0 18px rgba(0,255,0,.15);padding:14px;pointer-events:auto;position:relative}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px dashed rgba(0,255,0,.2)}.panel-label{font-size:1rem;color:var(--white);letter-spacing:.08em}.panel-toggle{min-width:34px;padding:4px 0;background:transparent;border:1px solid var(--green);color:var(--green);font:700 12px var(--font);cursor:pointer}.panel-toggle:hover{background:var(--green);color:var(--bg);text-shadow:none}.box.collapsed .panel-body{display:none}.box.collapsed .panel-head{margin-bottom:0;padding-bottom:0;border-bottom:0}.wide{width:min(640px,100%)}.mid{width:min(440px,100%)}.narrow{width:min(360px,100%)}h1,h2{font-size:1rem;color:var(--white);margin-bottom:10px;letter-spacing:.08em}.back{display:inline-block;margin-bottom:10px;color:var(--red);text-decoration:none;font-weight:700}.back:hover{color:var(--white)}p{font-size:.78rem;line-height:1.45;color:var(--muted)}.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 14px}.input,.check,.stat,.controls,.mode{display:flex;gap:8px}.input,.check,.stat{align-items:center;justify-content:space-between;margin-bottom:9px}.input label,.check label{font-size:.82rem;font-weight:700;min-width:110px}.term,select,input[type=color]{width:112px;background:rgba(0,0,0,.24);border:1px solid var(--green);color:var(--green);font-family:var(--font);padding:6px 8px;outline:none;text-shadow:inherit}.term[readonly]{color:var(--white);border-color:rgba(0,255,0,.35)}input[type=checkbox]{width:16px;height:16px;accent-color:#00ff7f}input[type=color]{height:34px;padding:2px;cursor:pointer}.controls,.mode{flex-wrap:wrap;margin:10px 0}.btn{background:transparent;border:1px solid var(--green);color:var(--green);font:700 12px var(--font);padding:6px 12px;cursor:pointer;letter-spacing:.05em;text-transform:uppercase}.btn:hover,.btn.active{background:var(--green);color:var(--bg);text-shadow:none;box-shadow:0 0 12px rgba(0,255,0,.4)}.btn.alt{border-color:var(--red);color:var(--red)}.btn.alt:hover{background:var(--red);color:var(--bg);box-shadow:0 0 12px rgba(255,84,84,.4)}.stat{font-size:.92rem;border-bottom:1px dashed rgba(0,255,0,.2);padding-bottom:6px}.stat:last-child{border-bottom:0;padding-bottom:0}.stat span,#status{color:var(--white)}#banner{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:30;width:min(700px,calc(100vw - 24px));padding:22px 28px;background:rgba(5,5,5,.94);border:2px solid var(--red);color:var(--red);text-align:center;font-size:1.15rem;line-height:1.45;cursor:default;box-shadow:0 0 24px rgba(255,84,84,.28)}#crosshair{position:absolute;top:50%;left:50%;width:0;height:0;transform:translate(-50%,-50%);pointer-events:none;z-index:15}.piece{position:absolute;display:block;background:rgba(0,255,102,.95)}small{font-size:.72rem;color:var(--muted)}@media (max-width:900px){body{overflow-y:auto}#ui{position:relative;min-height:100vh;padding-bottom:120px}.box,.wide,.mid,.narrow{width:100%;min-width:0}.grid2{grid-template-columns:1fr}#banner{font-size:1rem}}
+</style>
+</head>
+<body>
+<div id="trainer-stage"><canvas id="trainer-canvas"></canvas></div><div id="crt"></div>
+<div id="crosshair"><div id="c-up" class="piece"></div><div id="c-down" class="piece"></div><div id="c-left" class="piece"></div><div id="c-right" class="piece"></div><div id="c-dot" class="piece"></div></div>
+<div id="ui">
+  <div class="row">
+    <div class="box wide">
+      <a class="back" href="index.html">< RETURN TO DOSSIER</a>
+      <h1>KINETIC TELEMETRY // AIM LAB</h1>
+      <p>Press L to lock the mouse, then use the shared sensitivity and crosshair profile from the spray trainer to run four aim scenarios: 1w6t, pasu, cants, and a microadjust static clicking drill.</p>
+      <div class="grid2">
+        <div>
+          <div class="mode"><button class="btn active" id="mode-sens" type="button">SENS + DPI</button><button class="btn" id="mode-cm" type="button">CM / 360</button></div>
+          <div class="input"><label for="inp-sens">SENSITIVITY</label><input class="term" type="number" id="inp-sens" value="1.00" min="0.01" max="10" step="0.01"></div>
+          <div class="input"><label for="inp-dpi">MOUSE DPI</label><input class="term" type="number" id="inp-dpi" value="800" min="100" max="6400" step="50"></div>
+          <div class="input"><label for="inp-cm">CM / 360</label><input class="term" type="number" id="inp-cm" value="41.59" min="1" max="200" step="0.01" readonly></div>
+        </div>
+        <div>
+          <div class="stat">INPUT PATH <span id="status">WAITING FOR POINTER LOCK</span></div>
+          <div class="controls"><button class="btn active scenario" type="button" data-scenario="1w6t">1W6T</button><button class="btn scenario" type="button" data-scenario="pasu">PASU</button><button class="btn scenario" type="button" data-scenario="cants">CANTS</button><button class="btn scenario" type="button" data-scenario="microadjust">MICROADJUST</button></div>
+          <div class="mode"><button class="btn active run-mode" type="button" data-mode="timed">TIMED</button><button class="btn run-mode" type="button" data-mode="freeplay">FREEPLAY</button></div>
+          <div class="controls"><button class="btn" type="button" id="start-run">START</button><button class="btn alt" type="button" id="reset-run">RESET</button></div>
+          <div class="input"><label for="inp-duration">TIMED RUN</label><input class="term" type="number" id="inp-duration" value="60" min="5" max="600" step="5"></div>
+        </div>
+      </div>
+    </div>
+    <div class="box narrow">
+      <h2>RUN OUTPUT</h2>
+      <div class="stat">SCENARIO <span id="hud-scenario">1W6T</span></div>
+      <div class="stat">MODE <span id="hud-mode">TIMED</span></div>
+      <div class="stat">TIME <span id="hud-time">60.0S</span></div>
+      <div class="stat">SCORE <span id="hud-score">0</span></div>
+      <div class="stat">HITS <span id="hud-hits">0</span></div>
+      <div class="stat">MISSES <span id="hud-misses">0</span></div>
+      <div class="stat">ACCURACY <span id="hud-accuracy">0.0%</span></div>
+      <div class="stat">KILLS <span id="hud-kills">0</span></div>
+      <div class="stat">STREAK <span id="hud-streak">0</span></div>
+      <div class="stat">BEST <span id="hud-best">0</span></div>
+      <div class="stat">SPECIAL <span id="hud-special">N/A</span></div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="box mid">
+      <h2>CROSSHAIR EDITOR</h2>
+      <div class="grid2">
+        <div>
+          <div class="input"><label for="xh-preset">COLOR PRESET</label><select id="xh-preset"><option value="green">GREEN</option><option value="yellow">YELLOW</option><option value="cyan">CYAN</option><option value="red">RED</option><option value="white">WHITE</option><option value="custom">CUSTOM</option></select></div>
+          <div class="input"><label for="xh-custom">CUSTOM COLOR</label><input type="color" id="xh-custom" value="#00ff66"></div>
+          <div class="input"><label for="xh-alpha">ALPHA</label><input class="term" type="number" id="xh-alpha" value="0.95" min="0.1" max="1" step="0.05"></div>
+          <div class="input"><label for="xh-gap">GAP</label><input class="term" type="number" id="xh-gap" value="4" min="0" max="20" step="1"></div>
+          <div class="input"><label for="xh-length">LENGTH</label><input class="term" type="number" id="xh-length" value="10" min="2" max="28" step="1"></div>
+        </div>
+        <div>
+          <div class="input"><label for="xh-thickness">THICKNESS</label><input class="term" type="number" id="xh-thickness" value="2" min="1" max="8" step="1"></div>
+          <div class="input"><label for="xh-dot-size">DOT SIZE</label><input class="term" type="number" id="xh-dot-size" value="3" min="1" max="10" step="1"></div>
+          <div class="input"><label for="xh-outline-size">OUTLINE SIZE</label><input class="term" type="number" id="xh-outline-size" value="1" min="0" max="4" step="1"></div>
+          <div class="check"><label for="xh-dot">CENTER DOT</label><input type="checkbox" id="xh-dot"></div>
+          <div class="check"><label for="xh-outline">OUTLINE</label><input type="checkbox" id="xh-outline" checked></div>
+          <div class="check"><label for="xh-tstyle">T STYLE</label><input type="checkbox" id="xh-tstyle"></div>
+        </div>
+      </div>
+      <div class="controls"><button class="btn alt" type="button" id="xh-reset">RESET XHAIR</button></div>
+    </div>
+    <div class="box mid">
+      <h2>SCENARIO NOTES</h2>
+      <p><strong>1W6T</strong> keeps six static dots live at once for classic target switching. <strong>PASU</strong> runs one arcing mover at a time. <strong>CANTS</strong> is a track-to-kill switching drill with a 350ms dwell requirement. <strong>MICROADJUST</strong> spawns tiny static dots near center for short corrective flicks.</p>
+      <div class="stat">MOUSE LOCK <span>PRESS L</span></div>
+      <div class="stat">SHOOT <span>LEFT CLICK</span></div>
+      <div class="stat">TRACK KILL <span>CANTS ONLY</span></div>
+      <div class="stat">RELEASE LOCK <span>ESC</span></div>
+      <small>Timed runs stop automatically. Freeplay stays live until reset or scenario switch. Crosshair and sensitivity settings are shared with the spray trainer.</small>
+    </div>
+  </div>
+</div>
+<div id="banner">&gt; PRESS L TO LOCK MOUSE AND START AIM TRAINING<br><small>USE START TO BEGIN A RUN, ESC TO RELEASE POINTER LOCK</small></div>
+<script src="trainer-settings.js"></script>
+<script src="aim-trainer.js"></script>
+</body>
+</html>
