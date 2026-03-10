@@ -1,502 +1,140 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=900">
-    <title>TERMINAL // 3D KINETIC SIMULATION</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
-    <!-- Load Three.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
-    <style>
-        :root {
-            --term-bg: #050505;
-            --term-green: #0f0;
-            --term-green-dim: rgba(0, 255, 0, 0.3);
-            --term-red: #f00;
-            --term-red-dim: rgba(255, 0, 0, 0.3);
-            --term-white: #e3e3e3;
-            --font-main: 'Courier Prime', Courier, monospace;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-
-        body {
-            background-color: var(--term-bg);
-            color: var(--term-green);
-            font-family: var(--font-main);
-            height: 100vh;
-            overflow: hidden;
-            text-shadow: 0 0 5px var(--term-green);
-        }
-
-        /* 3D Canvas Background */
-        #sim-container {
-            position: absolute;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            z-index: 1;
-        }
-
-        /* CRT Overlay */
-        #crt-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            background-size: 100% 2px, 3px 100%;
-            pointer-events: none;
-            z-index: 10;
-        }
-
-        /* UI Layer */
-        #ui-layer {
-            position: absolute;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            z-index: 20;
-            pointer-events: none; /* Let clicks pass through to canvas by default */
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-        }
-
-        .header-panel {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            pointer-events: auto; /* Re-enable clicks for inputs */
-        }
-
-        .hud-box {
-            background: rgba(5, 5, 5, 0.85);
-            border: 1px solid var(--term-green);
-            padding: 15px;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
-        }
-
-        h1 { font-size: 1.2rem; margin-bottom: 15px; color: var(--term-white); }
-        
-        .return-link {
-            color: var(--term-red);
-            text-decoration: none;
-            font-weight: bold;
-            display: inline-block;
-            margin-bottom: 15px;
-        }
-        .return-link:hover { color: var(--term-white); }
-
-        /* Inputs */
-        .input-row {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-            gap: 10px;
-        }
-
-        .input-row label { width: 80px; font-weight: bold; }
-        
-        .terminal-input {
-            background: transparent;
-            border: 1px solid var(--term-green);
-            color: var(--term-green);
-            font-family: var(--font-main);
-            padding: 5px;
-            width: 80px;
-            outline: none;
-            text-shadow: inherit;
-        }
-        
-        .terminal-input:focus { background: var(--term-green-dim); color: var(--term-white); }
-        .terminal-input[readonly] { border-color: var(--term-green-dim); color: var(--term-white); }
-
-        /* Weapon Select */
-        .controls { display: flex; gap: 10px; margin-top: 15px; }
-        .btn {
-            background: transparent;
-            border: 1px solid var(--term-green);
-            color: var(--term-green);
-            font-family: var(--font-main);
-            font-weight: bold;
-            padding: 5px 15px;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-transform: uppercase;
-            text-shadow: inherit;
-        }
-        .btn:hover, .btn.active {
-            background: var(--term-green);
-            color: var(--term-bg);
-            box-shadow: 0 0 10px var(--term-green);
-            text-shadow: none;
-        }
-
-        /* Stats HUD */
-        .stats-panel {
-            text-align: right;
-        }
-        .hud-stat { font-size: 1.2rem; margin-bottom: 5px; }
-        .hud-stat span { color: var(--term-white); font-weight: bold; }
-
-        /* Lock Screen Banner */
-        #lock-banner {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(5, 5, 5, 0.9);
-            border: 2px solid var(--term-red);
-            color: var(--term-red);
-            padding: 20px 40px;
-            text-align: center;
-            font-size: 1.5rem;
-            cursor: pointer;
-            pointer-events: auto;
-            box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse { 0% { box-shadow: 0 0 10px rgba(255,0,0,0.2); } 50% { box-shadow: 0 0 30px rgba(255,0,0,0.6); } 100% { box-shadow: 0 0 10px rgba(255,0,0,0.2); } }
-
-        /* Crosshair */
-        #crosshair {
-            position: absolute;
-            top: 50%; left: 50%;
-            width: 10px; height: 10px;
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-            z-index: 15;
-        }
-        #crosshair::before, #crosshair::after {
-            content: '';
-            position: absolute;
-            background: rgba(0, 255, 0, 0.8);
-        }
-        #crosshair::before { top: 4px; left: -5px; width: 20px; height: 2px; }
-        #crosshair::after { top: -5px; left: 4px; width: 2px; height: 20px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CS2 Spray Trainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+:root{--bg:#050505;--panel:rgba(5,5,5,.88);--green:#0f0;--white:#e3e3e3;--red:#ff5454;--muted:#96b896;--font:"Courier Prime",monospace}*{box-sizing:border-box;margin:0;padding:0;user-select:none}html,body{width:100%;height:100%;overflow:hidden}body{font-family:var(--font);background:radial-gradient(circle at top,rgba(0,255,0,.06),transparent 35%),linear-gradient(180deg,#060806,#040404);color:var(--green);text-shadow:0 0 4px rgba(0,255,0,.45)}#sim-container,canvas,#crt{position:absolute;inset:0}#crt{pointer-events:none;z-index:10;background:linear-gradient(rgba(18,16,16,0) 50%,rgba(0,0,0,.24) 50%),linear-gradient(90deg,rgba(255,0,0,.06),rgba(0,255,0,.02),rgba(0,0,255,.06));background-size:100% 2px,3px 100%}#ui{position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;justify-content:space-between;gap:14px;padding:16px;pointer-events:none}.row{display:flex;gap:14px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap}.box{min-width:280px;max-width:100%;background:var(--panel);border:1px solid var(--green);box-shadow:0 0 18px rgba(0,255,0,.15);padding:14px;pointer-events:auto}.wide{width:min(640px,100%)}.mid{width:min(440px,100%)}.narrow{width:min(360px,100%)}h1,h2{font-size:1rem;color:var(--white);margin-bottom:10px;letter-spacing:.08em}.back{display:inline-block;margin-bottom:10px;color:var(--red);text-decoration:none;font-weight:700}.back:hover{color:var(--white)}p{font-size:.78rem;line-height:1.45;color:var(--muted)}.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 14px}.input,.check,.stat,.controls,.mode{display:flex;gap:8px}.input,.check,.stat{align-items:center;justify-content:space-between;margin-bottom:9px}.input label,.check label{font-size:.82rem;font-weight:700;min-width:110px}.term,select,input[type=color]{width:112px;background:rgba(0,0,0,.24);border:1px solid var(--green);color:var(--green);font-family:var(--font);padding:6px 8px;outline:none;text-shadow:inherit}.term[readonly]{color:var(--white);border-color:rgba(0,255,0,.35)}input[type=checkbox]{width:16px;height:16px;accent-color:#00ff7f}input[type=color]{height:34px;padding:2px;cursor:pointer}.controls,.mode{flex-wrap:wrap;margin:10px 0}.btn{background:transparent;border:1px solid var(--green);color:var(--green);font:700 12px var(--font);padding:6px 12px;cursor:pointer;letter-spacing:.05em;text-transform:uppercase}.btn:hover,.btn.active{background:var(--green);color:var(--bg);text-shadow:none;box-shadow:0 0 12px rgba(0,255,0,.4)}.btn.alt{border-color:var(--red);color:var(--red)}.btn.alt:hover{background:var(--red);color:var(--bg);box-shadow:0 0 12px rgba(255,84,84,.4)}.stat{font-size:.92rem;border-bottom:1px dashed rgba(0,255,0,.2);padding-bottom:6px}.stat:last-child{border-bottom:0;padding-bottom:0}.stat span,#status{color:var(--white)}#banner{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:30;width:min(680px,calc(100vw - 24px));padding:22px 28px;background:rgba(5,5,5,.94);border:2px solid var(--red);color:var(--red);text-align:center;font-size:1.15rem;line-height:1.45;cursor:pointer;box-shadow:0 0 24px rgba(255,84,84,.28)}#crosshair{position:absolute;top:50%;left:50%;width:0;height:0;transform:translate(-50%,-50%);pointer-events:none;z-index:15}.piece{position:absolute;display:block;background:rgba(0,255,102,.95)}small{font-size:.72rem;color:var(--muted)}@media (max-width:900px){body{overflow-y:auto}#ui{position:relative;min-height:100vh;padding-bottom:120px}.box,.wide,.mid,.narrow{width:100%;min-width:0}.grid2{grid-template-columns:1fr}#banner{font-size:1rem}}
+</style>
 </head>
 <body>
-
-    <div id="sim-container"></div>
-    <div id="crt-overlay"></div>
-    
-    <div id="crosshair"></div>
-
-    <div id="ui-layer">
-        <div class="header-panel">
-            
-            <!-- Left HUD: Config -->
-            <div class="hud-box">
-                <a href="index.html" class="return-link">< RETURN TO DOSSIER</a>
-                <h1>KINETIC TELEMETRY // CS2 ENGINE</h1>
-                
-                <div class="input-row">
-                    <label>SENSITIVITY</label>
-                    <input type="number" id="inp-sens" class="terminal-input" value="1.00" step="0.05">
-                </div>
-                <div class="input-row">
-                    <label>MOUSE DPI</label>
-                    <input type="number" id="inp-dpi" class="terminal-input" value="800" step="50">
-                </div>
-                <div class="input-row">
-                    <label>CM/360</label>
-                    <input type="text" id="inp-cm" class="terminal-input" readonly>
-                </div>
-
-                <div class="controls">
-                    <button class="btn active" data-weapon="ak47">AK-47</button>
-                    <button class="btn" data-weapon="m4a4">M4A4</button>
-                    <button class="btn" data-weapon="m4a1s">M4A1-S</button>
-                </div>
-            </div>
-
-            <!-- Right HUD: Status -->
-            <div class="hud-box stats-panel">
-                <div class="hud-stat">WEAPON: <span id="hud-weapon">AK-47</span></div>
-                <div class="hud-stat">ROUNDS: <span id="hud-ammo">30</span></div>
-            </div>
-            
+<div id="sim-container"></div><div id="crt"></div>
+<div id="crosshair"><div id="c-up" class="piece"></div><div id="c-down" class="piece"></div><div id="c-left" class="piece"></div><div id="c-right" class="piece"></div><div id="c-dot" class="piece"></div></div>
+<div id="ui">
+  <div class="row">
+    <div class="box wide">
+      <a class="back" href="index.html">< RETURN TO DOSSIER</a>
+      <h1>KINETIC TELEMETRY // CS2 SPRAY LAB</h1>
+      <p>Click to lock the mouse, then hold left click to spray. The camera uses the actual sensitivity value derived from either CS2 sensitivity plus DPI or your chosen cm/360.</p>
+      <div class="mode"><button class="btn active" id="mode-sens" type="button">SENS + DPI</button><button class="btn" id="mode-cm" type="button">CM / 360</button></div>
+      <div class="grid2">
+        <div>
+          <div class="input"><label for="inp-sens">SENSITIVITY</label><input class="term" type="number" id="inp-sens" value="1.00" min="0.01" max="10" step="0.01"></div>
+          <div class="input"><label for="inp-dpi">MOUSE DPI</label><input class="term" type="number" id="inp-dpi" value="800" min="100" max="6400" step="50"></div>
+          <div class="input"><label for="inp-cm">CM / 360</label><input class="term" type="number" id="inp-cm" value="41.59" min="1" max="200" step="0.01" readonly></div>
         </div>
+        <div>
+          <div class="stat">INPUT PATH <span id="status">WAITING FOR POINTER LOCK</span></div>
+          <div class="controls"><button class="btn active weapon" type="button" data-weapon="ak47">AK-47</button><button class="btn weapon" type="button" data-weapon="m4a4">M4A4</button><button class="btn weapon" type="button" data-weapon="m4a1s">M4A1-S</button></div>
+          <small>Raw pointer movement is requested first. If the browser rejects it, the page falls back to standard pointer-lock mouse delta input.</small>
+        </div>
+      </div>
     </div>
-
-    <div id="lock-banner">> CLICK HERE TO INITIALIZE UPLINK AND LOCK MOUSE <br><small style="font-size:1rem; color:var(--term-white)">(ESC TO DISENGAGE)</small></div>
-
-    <script>
-        // --- WEAPON DATA (3D ANGULAR CONVERSION) ---
-        // We use the same baseline pattern shape, but scale the pixel offsets into radians.
-        // CS2 recoil forces the pitch up (positive recoil target) and yaw left/right.
-        const RAD_SCALE = 0.0012; // Tuning factor for angular kick
-        
-        const weapons = {
-            ak47: {
-                name: "AK-47", rpm: 600, mag: 30,
-                pattern: [
-                    {x: 0, y: 0}, {x: 2, y: 25}, {x: -5, y: 50}, {x: -10, y: 75}, {x: -15, y: 100}, 
-                    {x: -20, y: 125}, {x: -28, y: 140}, {x: -35, y: 150}, {x: -40, y: 160}, {x: -40, y: 165},
-                    {x: -30, y: 170}, {x: -15, y: 175}, {x: 5, y: 175}, {x: 25, y: 170}, {x: 45, y: 165},
-                    {x: 60, y: 160}, {x: 75, y: 155}, {x: 80, y: 150}, {x: 75, y: 145}, {x: 60, y: 145},
-                    {x: 40, y: 150}, {x: 20, y: 155}, {x: 0, y: 160}, {x: -20, y: 165}, {x: -40, y: 165},
-                    {x: -60, y: 160}, {x: -75, y: 155}, {x: -85, y: 150}, {x: -90, y: 145}, {x: -95, y: 140}
-                ].map(p => ({ x: p.x * RAD_SCALE, y: p.y * RAD_SCALE }))
-            },
-            m4a4: {
-                name: "M4A4", rpm: 666, mag: 30,
-                pattern: [
-                    {x: 0, y: 0}, {x: 0, y: 20}, {x: -2, y: 40}, {x: -5, y: 60}, {x: -10, y: 75},
-                    {x: -15, y: 90}, {x: -22, y: 105}, {x: -30, y: 115}, {x: -35, y: 125}, {x: -40, y: 130},
-                    {x: -35, y: 135}, {x: -25, y: 140}, {x: -10, y: 140}, {x: 5, y: 140}, {x: 20, y: 135},
-                    {x: 35, y: 130}, {x: 45, y: 125}, {x: 50, y: 120}, {x: 45, y: 115}, {x: 35, y: 115},
-                    {x: 20, y: 120}, {x: 5, y: 125}, {x: -10, y: 130}, {x: -25, y: 130}, {x: -40, y: 125},
-                    {x: -55, y: 120}, {x: -65, y: 115}, {x: -70, y: 110}, {x: -75, y: 105}, {x: -80, y: 100}
-                ].map(p => ({ x: p.x * RAD_SCALE, y: p.y * RAD_SCALE }))
-            },
-            m4a1s: {
-                name: "M4A1-S", rpm: 600, mag: 20,
-                pattern: [
-                    {x: 0, y: 0}, {x: 0, y: 15}, {x: -2, y: 30}, {x: -4, y: 45}, {x: -8, y: 60},
-                    {x: -12, y: 70}, {x: -18, y: 80}, {x: -22, y: 85}, {x: -25, y: 90}, {x: -22, y: 95},
-                    {x: -15, y: 95}, {x: -5, y: 95}, {x: 5, y: 95}, {x: 15, y: 95}, {x: 25, y: 90},
-                    {x: 30, y: 85}, {x: 32, y: 80}, {x: 28, y: 80}, {x: 20, y: 85}, {x: 10, y: 85}
-                ].map(p => ({ x: p.x * RAD_SCALE, y: p.y * RAD_SCALE }))
-            }
-        };
-
-        // --- GLOBAL STATE ---
-        let currentWeapon = 'ak47';
-        let isShooting = false;
-        let bulletIndex = 0;
-        let simInterval = null;
-        let isLocked = false;
-        
-        // Sensitivity Math
-        let sens = 1.0;
-        let dpi = 800;
-        const M_YAW = 0.022; // Source Engine Default
-
-        // Camera Angles
-        let basePitch = 0;
-        let baseYaw = 0;
-        let recoilPitch = 0;
-        let recoilYaw = 0;
-        let targetRecoilPitch = 0;
-        let targetRecoilYaw = 0;
-
-        let impacts = []; // Array to store hit decals
-
-        // --- DOM REFS ---
-        const inpSens = document.getElementById('inp-sens');
-        const inpDpi = document.getElementById('inp-dpi');
-        const inpCm = document.getElementById('inp-cm');
-        const hudAmmo = document.getElementById('hud-ammo');
-        const hudWeapon = document.getElementById('hud-weapon');
-        const lockBanner = document.getElementById('lock-banner');
-        const btns = document.querySelectorAll('.btn');
-        const container = document.getElementById('sim-container');
-
-        // --- CM/360 CONVERTER ---
-        function updateSensMath() {
-            sens = parseFloat(inpSens.value) || 1.0;
-            dpi = parseInt(inpDpi.value) || 800;
-            // Formula: cm/360 = (360 / (yaw * sens * dpi)) * 2.54
-            const cm360 = (360 / (M_YAW * sens * dpi)) * 2.54;
-            inpCm.value = cm360.toFixed(2) + " cm";
-        }
-        
-        inpSens.addEventListener('input', updateSensMath);
-        inpDpi.addEventListener('input', updateSensMath);
-        updateSensMath();
-
-        // --- THREE.JS INITIALIZATION ---
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x0a0a0a);
-        scene.fog = new THREE.FogExp2(0x0a0a0a, 0.02);
-
-        // Camera (FOV 90 to match CS2 rough feel)
-        const camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 1.6, 0); // ~Eye level
-
-        const renderer = new THREE.WebGLRenderer({ antialias: false });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        container.appendChild(renderer.domElement);
-
-        // Build Environment (Grid room)
-        const gridHelper = new THREE.GridHelper(50, 50, 0x00ff00, 0x003300);
-        scene.add(gridHelper);
-
-        // Target Wall
-        const wallGeo = new THREE.PlaneGeometry(50, 20);
-        const wallMat = new THREE.MeshBasicMaterial({ color: 0x111111, side: THREE.DoubleSide });
-        const wall = new THREE.Mesh(wallGeo, wallMat);
-        wall.position.set(0, 5, -10);
-        scene.add(wall);
-
-        // Target Outline (The box you aim at)
-        const edges = new THREE.EdgesGeometry(new THREE.PlaneGeometry(4, 4));
-        const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x00ff00 }));
-        line.position.set(0, 1.6, -9.9);
-        scene.add(line);
-
-        // Decal Geometry for bullets
-        const decalGeo = new THREE.PlaneGeometry(0.1, 0.1);
-        const decalMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-
-        // Raycaster for hit registration
-        const raycaster = new THREE.Raycaster();
-        const centerPoint = new THREE.Vector2(0, 0); // Screen center
-
-        // --- CORE KINETIC LOGIC ---
-        function clearImpacts() {
-            impacts.forEach(mesh => scene.remove(mesh));
-            impacts = [];
-        }
-
-        function switchWeapon(key) {
-            currentWeapon = key;
-            const w = weapons[key];
-            hudWeapon.textContent = w.name;
-            hudAmmo.textContent = w.mag;
-            btns.forEach(b => b.classList.toggle('active', b.dataset.weapon === key));
-            clearImpacts();
-        }
-
-        function fireBullet() {
-            const w = weapons[currentWeapon];
-            if (bulletIndex >= w.mag) {
-                stopShooting();
-                return;
-            }
-
-            // Set Target Recoil Angles
-            const recoil = w.pattern[bulletIndex];
-            targetRecoilPitch = recoil.y;
-            targetRecoilYaw = recoil.x;
-
-            // Hit Registration via Raycast
-            raycaster.setFromCamera(centerPoint, camera);
-            const intersects = raycaster.intersectObject(wall);
-            
-            if (intersects.length > 0) {
-                const hit = intersects[0];
-                const decal = new THREE.Mesh(decalGeo, decalMat);
-                decal.position.copy(hit.point);
-                // Push slightly off wall to prevent z-fighting
-                decal.position.z += 0.01;
-                scene.add(decal);
-                impacts.push(decal);
-            }
-
-            bulletIndex++;
-            hudAmmo.textContent = w.mag - bulletIndex;
-        }
-
-        function startShooting() {
-            if (!isLocked) return;
-            isShooting = true;
-            clearImpacts();
-            bulletIndex = 0;
-            const w = weapons[currentWeapon];
-            
-            fireBullet(); // First shot instant
-            simInterval = setInterval(fireBullet, 60000 / w.rpm);
-        }
-
-        function stopShooting() {
-            isShooting = false;
-            clearInterval(simInterval);
-            // Initiate recoil decay
-            targetRecoilPitch = 0;
-            targetRecoilYaw = 0;
-        }
-
-        // --- POINTER LOCK & RAW MOUSE INPUT ---
-        lockBanner.addEventListener('click', () => {
-            // Force synchronous execution. Async promises strip the trusted gesture flag.
-            try {
-                document.body.requestPointerLock();
-            } catch (err) {
-                lockBanner.innerHTML = "> ERR: API REJECTED.<br><small style='font-size:1rem; color:var(--term-white)'>(CHECK BROWSER PERMISSIONS)</small>";
-                lockBanner.style.borderColor = "#ff0000";
-            }
-        });
-
-        document.addEventListener('pointerlockchange', () => {
-            // Simplified check: if anything is locked, we're good.
-            isLocked = !!document.pointerLockElement;
-            
-            if (isLocked) {
-                lockBanner.style.display = 'none';
-            } else {
-                lockBanner.style.display = 'block';
-                lockBanner.innerHTML = "> CLICK HERE TO INITIALIZE UPLINK AND LOCK MOUSE <br><small style='font-size:1rem; color:var(--term-white)'>(ESC TO DISENGAGE)</small>";
-                lockBanner.style.borderColor = "var(--term-red)";
-                stopShooting();
-            }
-        });
-
-        document.addEventListener('pointerlockerror', () => {
-            lockBanner.innerHTML = "> ERR: BROWSER BLOCKED POINTER LOCK.<br><small style='font-size:1rem; color:var(--term-white)'>(ENSURE NO IFRAMES OR OVERLAYS)</small>";
-            lockBanner.style.borderColor = "#ff0000";
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            if (!isLocked) return;
-
-            // CS2 Engine Math Implementation
-            // deltaDegrees = rawMouseDelta * sens * m_yaw
-            // radians = deltaDegrees * (PI / 180)
-            const radPerDot = sens * M_YAW * (Math.PI / 180);
-            
-            const yawDelta = e.movementX * radPerDot;
-            const pitchDelta = e.movementY * radPerDot;
-
-            // Apply to base camera angles. 
-            // Negative yaw = left, positive = right. Negative pitch = up, positive = down.
-            baseYaw -= yawDelta;
-            basePitch -= pitchDelta;
-
-            // Clamp pitch to look straight up/down max
-            basePitch = Math.max(-Math.PI/2, Math.min(Math.PI/2, basePitch));
-        });
-
-        document.addEventListener('mousedown', (e) => {
-            if (e.button === 0 && isLocked) startShooting();
-        });
-
-        document.addEventListener('mouseup', (e) => {
-            if (e.button === 0 && isShooting) stopShooting();
-        });
-
-        btns.forEach(btn => {
-            btn.addEventListener('click', (e) => switchWeapon(e.target.dataset.weapon));
-        });
-
-        // --- RENDER LOOP ---
-        const clock = new THREE.Clock();
-
-        function animate() {
-            requestAnimationFrame(animate);
-            const delta = clock.getDelta();
-
-            // Smoothly interpolate current recoil towards target recoil
-            // Decay is faster when not shooting
-            const smoothFactor = isShooting ? 15.0 : 8.0; 
-            recoilPitch += (targetRecoilPitch - recoilPitch) * smoothFactor * delta;
-            recoilYaw += (targetRecoilYaw - recoilYaw) * smoothFactor * delta;
-
-            // Composite camera rotation: Base Mouse Angles + Recoil Angles
-            // Euler rotation order 'YXZ' prevents camera roll
-            camera.rotation.set(basePitch + recoilPitch, baseYaw + recoilYaw, 0, 'YXZ');
-
-            renderer.render(scene, camera);
-        }
-
-        // Handle Window Resize
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
-        animate();
-
-    </script>
+    <div class="box narrow">
+      <h2>SPRAY OUTPUT</h2>
+      <div class="stat">WEAPON <span id="hud-weapon">AK-47</span></div>
+      <div class="stat">ROUNDS LEFT <span id="hud-ammo">30</span></div>
+      <div class="stat">BULLETS FIRED <span id="hud-fired">0</span></div>
+      <div class="stat">BOT HITS <span id="hud-hits">0</span></div>
+      <div class="stat">HEADSHOTS <span id="hud-headshots">0</span></div>
+      <div class="stat">ACCURACY <span id="hud-accuracy">0.0%</span></div>
+      <div class="stat">LAST SPRAY <span id="hud-last">WAITING</span></div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="box mid">
+      <h2>CROSSHAIR EDITOR</h2>
+      <div class="grid2">
+        <div>
+          <div class="input"><label for="xh-preset">COLOR PRESET</label><select id="xh-preset"><option value="green">GREEN</option><option value="yellow">YELLOW</option><option value="cyan">CYAN</option><option value="red">RED</option><option value="white">WHITE</option><option value="custom">CUSTOM</option></select></div>
+          <div class="input"><label for="xh-custom">CUSTOM COLOR</label><input type="color" id="xh-custom" value="#00ff66"></div>
+          <div class="input"><label for="xh-alpha">ALPHA</label><input class="term" type="number" id="xh-alpha" value="0.95" min="0.1" max="1" step="0.05"></div>
+          <div class="input"><label for="xh-gap">GAP</label><input class="term" type="number" id="xh-gap" value="4" min="0" max="20" step="1"></div>
+          <div class="input"><label for="xh-length">LENGTH</label><input class="term" type="number" id="xh-length" value="10" min="2" max="28" step="1"></div>
+        </div>
+        <div>
+          <div class="input"><label for="xh-thickness">THICKNESS</label><input class="term" type="number" id="xh-thickness" value="2" min="1" max="8" step="1"></div>
+          <div class="input"><label for="xh-dot-size">DOT SIZE</label><input class="term" type="number" id="xh-dot-size" value="3" min="1" max="10" step="1"></div>
+          <div class="input"><label for="xh-outline-size">OUTLINE SIZE</label><input class="term" type="number" id="xh-outline-size" value="1" min="0" max="4" step="1"></div>
+          <div class="check"><label for="xh-dot">CENTER DOT</label><input type="checkbox" id="xh-dot"></div>
+          <div class="check"><label for="xh-outline">OUTLINE</label><input type="checkbox" id="xh-outline" checked></div>
+          <div class="check"><label for="xh-tstyle">T STYLE</label><input type="checkbox" id="xh-tstyle"></div>
+        </div>
+      </div>
+      <div class="controls"><button class="btn alt" type="button" id="xh-reset">RESET XHAIR</button></div>
+    </div>
+    <div class="box mid">
+      <h2>DRILL NOTES</h2>
+      <p>Accuracy is computed from bullets that intersect the bot before the wall. Bullet impacts clear when a new spray begins so the current attempt stays readable.</p>
+      <div class="stat">MOUSE LOCK <span>CLICK BANNER OR CANVAS</span></div>
+      <div class="stat">SPRAY <span>HOLD LEFT MOUSE</span></div>
+      <div class="stat">RELEASE LOCK <span>ESC</span></div>
+      <div class="stat">BOT RANGE <span>10.5 UNITS</span></div>
+      <small>This is still a browser simulation. Exact parity depends on pointer-lock support in the browser you use to open the file.</small>
+    </div>
+  </div>
+</div>
+<div id="banner">&gt; CLICK TO LOCK MOUSE AND START TRAINING<br><small>LEFT CLICK AND HOLD TO SPRAY, ESC TO RELEASE POINTER LOCK</small></div>
+<script>
+const RAD_SCALE=.0012,M_YAW=.022,DEG_TO_RAD=Math.PI/180;
+const weapons={ak47:{name:"AK-47",rpm:600,mag:30,pattern:[{x:0,y:0},{x:2,y:25},{x:-5,y:50},{x:-10,y:75},{x:-15,y:100},{x:-20,y:125},{x:-28,y:140},{x:-35,y:150},{x:-40,y:160},{x:-40,y:165},{x:-30,y:170},{x:-15,y:175},{x:5,y:175},{x:25,y:170},{x:45,y:165},{x:60,y:160},{x:75,y:155},{x:80,y:150},{x:75,y:145},{x:60,y:145},{x:40,y:150},{x:20,y:155},{x:0,y:160},{x:-20,y:165},{x:-40,y:165},{x:-60,y:160},{x:-75,y:155},{x:-85,y:150},{x:-90,y:145},{x:-95,y:140}].map(p=>({x:p.x*RAD_SCALE,y:p.y*RAD_SCALE}))},m4a4:{name:"M4A4",rpm:666,mag:30,pattern:[{x:0,y:0},{x:0,y:20},{x:-2,y:40},{x:-5,y:60},{x:-10,y:75},{x:-15,y:90},{x:-22,y:105},{x:-30,y:115},{x:-35,y:125},{x:-40,y:130},{x:-35,y:135},{x:-25,y:140},{x:-10,y:140},{x:5,y:140},{x:20,y:135},{x:35,y:130},{x:45,y:125},{x:50,y:120},{x:45,y:115},{x:35,y:115},{x:20,y:120},{x:5,y:125},{x:-10,y:130},{x:-25,y:130},{x:-40,y:125},{x:-55,y:120},{x:-65,y:115},{x:-70,y:110},{x:-75,y:105},{x:-80,y:100}].map(p=>({x:p.x*RAD_SCALE,y:p.y*RAD_SCALE}))},m4a1s:{name:"M4A1-S",rpm:600,mag:20,pattern:[{x:0,y:0},{x:0,y:15},{x:-2,y:30},{x:-4,y:45},{x:-8,y:60},{x:-12,y:70},{x:-18,y:80},{x:-22,y:85},{x:-25,y:90},{x:-22,y:95},{x:-15,y:95},{x:-5,y:95},{x:5,y:95},{x:15,y:95},{x:25,y:90},{x:30,y:85},{x:32,y:80},{x:28,y:80},{x:20,y:85},{x:10,y:85}].map(p=>({x:p.x*RAD_SCALE,y:p.y*RAD_SCALE}))}};
+const state={weapon:"ak47",shooting:false,bulletIndex:0,shots:0,hits:0,headshots:0,simInterval:null,locked:false,mode:"sens",sens:1,dpi:800,cm360:41.59,inputStatus:"WAITING FOR POINTER LOCK",pendingLockMode:"STANDARD POINTER",basePitch:0,baseYaw:0,recoilPitch:0,recoilYaw:0,targetPitch:0,targetYaw:0,botFlash:0};
+const xhDefaults={preset:"green",custom:"#00ff66",alpha:.95,gap:4,length:10,thickness:2,dotSize:3,dot:false,outline:true,outlineSize:1,tStyle:false};
+const xh={...xhDefaults};
+const $=id=>document.getElementById(id),weaponButtons=[...document.querySelectorAll('.weapon')];
+const inpSens=$("inp-sens"),inpDpi=$("inp-dpi"),inpCm=$("inp-cm"),modeSens=$("mode-sens"),modeCm=$("mode-cm"),banner=$("banner"),hudWeapon=$("hud-weapon"),hudAmmo=$("hud-ammo"),hudFired=$("hud-fired"),hudHits=$("hud-hits"),hudHeadshots=$("hud-headshots"),hudAccuracy=$("hud-accuracy"),hudLast=$("hud-last"),statusEl=$("status");
+const xhPreset=$("xh-preset"),xhCustom=$("xh-custom"),xhAlpha=$("xh-alpha"),xhGap=$("xh-gap"),xhLength=$("xh-length"),xhThickness=$("xh-thickness"),xhDotSize=$("xh-dot-size"),xhOutlineSize=$("xh-outline-size"),xhDot=$("xh-dot"),xhOutline=$("xh-outline"),xhTStyle=$("xh-tstyle"),xhReset=$("xh-reset");
+const crosshair={up:$("c-up"),down:$("c-down"),left:$("c-left"),right:$("c-right"),dot:$("c-dot")};
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x070907);scene.fog=new THREE.FogExp2(0x070907,.028);
+const camera=new THREE.PerspectiveCamera(90,window.innerWidth/window.innerHeight,.1,1000);camera.position.set(0,1.62,2.4);
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:"high-performance"});renderer.setSize(window.innerWidth,window.innerHeight);renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));$("sim-container").appendChild(renderer.domElement);
+scene.add(new THREE.AmbientLight(0x88aa88,.75));const keyLight=new THREE.DirectionalLight(0x66ff88,.85);keyLight.position.set(4,10,2);scene.add(keyLight);
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(50,50),new THREE.MeshStandardMaterial({color:0x071107,roughness:.92,metalness:.02}));floor.rotation.x=-Math.PI/2;scene.add(floor);
+const grid=new THREE.GridHelper(48,48,0x00ff66,0x103310);grid.position.y=.01;scene.add(grid);
+const wall=new THREE.Mesh(new THREE.PlaneGeometry(30,12),new THREE.MeshStandardMaterial({color:0x0f120f,roughness:.95,metalness:.02}));wall.position.set(0,4,-10.8);wall.userData.hitType="wall";scene.add(wall);
+const outline=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(2.2,4)),new THREE.LineBasicMaterial({color:0x00ff66}));outline.position.set(0,2.1,-10.79);scene.add(outline);
+const sideGeo=new THREE.PlaneGeometry(14,8),sideMat=new THREE.MeshStandardMaterial({color:0x081108,side:THREE.DoubleSide});const leftWall=new THREE.Mesh(sideGeo,sideMat);leftWall.position.set(-7,4,-5);leftWall.rotation.y=Math.PI/2;scene.add(leftWall);const rightWall=leftWall.clone();rightWall.position.x=7;rightWall.rotation.y=-Math.PI/2;scene.add(rightWall);
+const botBodyMat=new THREE.MeshStandardMaterial({color:0x1f8f44,emissive:0x001100,roughness:.8,metalness:.05});const botHeadMat=new THREE.MeshStandardMaterial({color:0x79c67d,emissive:0x001100,roughness:.78,metalness:.04});
+const bot=new THREE.Group();bot.position.set(0,0,-10.2);const base=new THREE.Mesh(new THREE.CylinderGeometry(.55,.75,.12,20),new THREE.MeshStandardMaterial({color:0x202020,roughness:.9,metalness:.12}));base.position.set(0,.06,0);bot.add(base);
+const torso=new THREE.Mesh(new THREE.BoxGeometry(1.05,1.65,.55),botBodyMat);torso.position.set(0,1.1,0);torso.userData.hitType="bot";torso.userData.zone="body";bot.add(torso);
+const head=new THREE.Mesh(new THREE.SphereGeometry(.34,20,20),botHeadMat);head.position.set(0,2.13,0);head.userData.hitType="bot";head.userData.zone="head";bot.add(head);scene.add(bot);
+const raycaster=new THREE.Raycaster(),center=new THREE.Vector2(0,0),targets=[head,torso,wall],impacts=[],impactGeo=new THREE.SphereGeometry(.045,8,8),impactWallMat=new THREE.MeshBasicMaterial({color:0xff4d4d}),impactBotMat=new THREE.MeshBasicMaterial({color:0x8aff8a});
+function clamp(v,min,max){return Math.min(max,Math.max(min,v))}function num(v,fallback){const n=Number.parseFloat(v);return Number.isFinite(n)?n:fallback}function cm360FromSens(s,d){return 360/(M_YAW*s*d)*2.54}function sensFromCm(cm,d){return 360/((cm/2.54)*d*M_YAW)}function radiansPerCount(){return state.sens*M_YAW*DEG_TO_RAD}
+function syncSensitivity(){state.dpi=clamp(Math.round(num(inpDpi.value,state.dpi)),100,6400);inpDpi.value=String(state.dpi);if(state.mode==="sens"){state.sens=clamp(num(inpSens.value,state.sens),.01,10);state.cm360=cm360FromSens(state.sens,state.dpi)}else{state.cm360=clamp(num(inpCm.value,state.cm360),1,200);state.sens=sensFromCm(state.cm360,state.dpi)}inpSens.value=state.sens.toFixed(2);inpCm.value=state.cm360.toFixed(2)}
+function setMode(mode){state.mode=mode;modeSens.classList.toggle("active",mode==="sens");modeCm.classList.toggle("active",mode==="cm");inpSens.readOnly=mode!=="sens";inpCm.readOnly=mode!=="cm";syncSensitivity()}
+function updateHud(){const w=weapons[state.weapon],acc=state.shots?state.hits/state.shots*100:0;hudWeapon.textContent=w.name;hudAmmo.textContent=String(w.mag-state.bulletIndex);hudFired.textContent=String(state.shots);hudHits.textContent=String(state.hits);hudHeadshots.textContent=String(state.headshots);hudAccuracy.textContent=acc.toFixed(1)+"%";statusEl.textContent=state.inputStatus}
+function finalizeSpray(){if(!state.shots){hudLast.textContent="WAITING";return}const acc=state.hits/state.shots*100;hudLast.textContent=`${state.hits}/${state.shots} // ${acc.toFixed(1)}%`}
+function clearImpacts(){while(impacts.length)scene.remove(impacts.pop())}
+function addImpact(hit,mat){const decal=new THREE.Mesh(impactGeo,mat);decal.position.copy(hit.point);if(hit.face&&hit.face.normal)decal.position.add(hit.face.normal.clone().multiplyScalar(.025));impacts.push(decal);scene.add(decal)}
+function switchWeapon(key){state.weapon=key;state.bulletIndex=0;state.shots=0;state.hits=0;state.headshots=0;clearImpacts();finalizeSpray();weaponButtons.forEach(btn=>btn.classList.toggle("active",btn.dataset.weapon===key));updateHud()}
+function stopShooting(){if(state.simInterval){clearInterval(state.simInterval);state.simInterval=null}if(state.shooting){state.shooting=false;finalizeSpray()}state.targetPitch=0;state.targetYaw=0}
+function fireBullet(){const weapon=weapons[state.weapon],recoil=weapon.pattern[Math.min(state.bulletIndex,weapon.pattern.length-1)];state.targetPitch=recoil.y;state.targetYaw=recoil.x;raycaster.setFromCamera(center,camera);const hits=raycaster.intersectObjects(targets,false);if(hits.length){const hit=hits[0];if(hit.object.userData.hitType==="bot"){state.hits+=1;if(hit.object.userData.zone==="head")state.headshots+=1;addImpact(hit,impactBotMat);state.botFlash=.12}else addImpact(hit,impactWallMat)}state.bulletIndex+=1;state.shots+=1;updateHud();if(state.bulletIndex>=weapon.mag)stopShooting()}
+function startShooting(){const weapon=weapons[state.weapon];if(!state.locked||state.shooting)return;clearImpacts();state.shooting=true;state.bulletIndex=0;state.shots=0;state.hits=0;state.headshots=0;hudLast.textContent="LIVE";updateHud();fireBullet();if(weapon.mag>1)state.simInterval=window.setInterval(fireBullet,60000/weapon.rpm)}
+function setBanner(message,error){banner.innerHTML=message;banner.style.borderColor=error?"#ff5454":"var(--red)";banner.style.color=error?"#ff9090":"var(--red)"}
+async function requestLock(){if(document.pointerLockElement===renderer.domElement)return;if(!renderer.domElement.requestPointerLock){state.inputStatus="POINTER LOCK UNSUPPORTED";updateHud();setBanner("&gt; POINTER LOCK IS NOT AVAILABLE IN THIS BROWSER",true);return}state.pendingLockMode="RAW INPUT";try{const attempt=renderer.domElement.requestPointerLock({unadjustedMovement:true});if(attempt&&typeof attempt.then==="function")await attempt}catch(err){state.pendingLockMode="STANDARD POINTER";try{const fallback=renderer.domElement.requestPointerLock();if(fallback&&typeof fallback.then==="function")await fallback}catch(err2){state.inputStatus="LOCK REQUEST BLOCKED";updateHud();setBanner("&gt; POINTER LOCK REQUEST FAILED<br><small>OPEN THIS PAGE DIRECTLY IN ITS OWN TAB OR WINDOW</small>",true)}}}
+function rgb(hex){const h=hex.replace("#","");const full=h.length===3?h.split("").map(c=>c+c).join(""):h;return{r:parseInt(full.slice(0,2),16),g:parseInt(full.slice(2,4),16),b:parseInt(full.slice(4,6),16)}}
+function crosshairColor(){const presets={green:"#00ff66",yellow:"#f9ff5a",cyan:"#58fff5",red:"#ff5a5a",white:"#f5f5f5"};return xh.preset==="custom"?xh.custom:presets[xh.preset]}
+function stylePiece(el,w,h,l,t,show){el.style.width=w+"px";el.style.height=h+"px";el.style.left=l+"px";el.style.top=t+"px";el.style.display=show?"block":"none"}
+function applyCrosshair(){const c=rgb(crosshairColor()),color=`rgba(${c.r}, ${c.g}, ${c.b}, ${clamp(xh.alpha,.1,1)})`,outline=xh.outline?xh.outlineSize:0,shadow=outline?`0 0 0 ${outline}px rgba(0,0,0,.95)`:"none",halfT=xh.thickness/2,halfD=xh.dotSize/2;Object.values(crosshair).forEach(piece=>{piece.style.background=color;piece.style.boxShadow=shadow;piece.style.borderRadius="1px"});stylePiece(crosshair.left,xh.length,xh.thickness,-(xh.gap+xh.length),-halfT,true);stylePiece(crosshair.right,xh.length,xh.thickness,xh.gap,-halfT,true);stylePiece(crosshair.up,xh.thickness,xh.length,-halfT,-(xh.gap+xh.length),!xh.tStyle);stylePiece(crosshair.down,xh.thickness,xh.length,-halfT,xh.gap,true);stylePiece(crosshair.dot,xh.dotSize,xh.dotSize,-halfD,-halfD,xh.dot);xhCustom.disabled=xh.preset!=="custom"}
+function syncCrosshair(){xh.preset=xhPreset.value;xh.custom=xhCustom.value;xh.alpha=clamp(num(xhAlpha.value,xh.alpha),.1,1);xh.gap=clamp(num(xhGap.value,xh.gap),0,20);xh.length=clamp(num(xhLength.value,xh.length),2,28);xh.thickness=clamp(num(xhThickness.value,xh.thickness),1,8);xh.dotSize=clamp(num(xhDotSize.value,xh.dotSize),1,10);xh.outlineSize=clamp(num(xhOutlineSize.value,xh.outlineSize),0,4);xh.dot=xhDot.checked;xh.outline=xhOutline.checked;xh.tStyle=xhTStyle.checked;xhAlpha.value=xh.alpha.toFixed(2);xhGap.value=String(xh.gap);xhLength.value=String(xh.length);xhThickness.value=String(xh.thickness);xhDotSize.value=String(xh.dotSize);xhOutlineSize.value=String(xh.outlineSize);applyCrosshair()}
+function resetCrosshair(){Object.assign(xh,xhDefaults);xhPreset.value=xh.preset;xhCustom.value=xh.custom;xhAlpha.value=xh.alpha.toFixed(2);xhGap.value=String(xh.gap);xhLength.value=String(xh.length);xhThickness.value=String(xh.thickness);xhDotSize.value=String(xh.dotSize);xhOutlineSize.value=String(xh.outlineSize);xhDot.checked=xh.dot;xhOutline.checked=xh.outline;xhTStyle.checked=xh.tStyle;applyCrosshair()}
+modeSens.addEventListener("click",()=>setMode("sens"));modeCm.addEventListener("click",()=>setMode("cm"));inpSens.addEventListener("input",syncSensitivity);inpDpi.addEventListener("input",syncSensitivity);inpCm.addEventListener("input",syncSensitivity);weaponButtons.forEach(btn=>btn.addEventListener("click",()=>switchWeapon(btn.dataset.weapon)));[xhPreset,xhCustom,xhAlpha,xhGap,xhLength,xhThickness,xhDotSize,xhOutlineSize,xhDot,xhOutline,xhTStyle].forEach(el=>{el.addEventListener("input",syncCrosshair);el.addEventListener("change",syncCrosshair)});xhReset.addEventListener("click",resetCrosshair);
+banner.addEventListener("click",requestLock);renderer.domElement.addEventListener("click",()=>{if(!state.locked)requestLock()});
+document.addEventListener("pointerlockchange",()=>{state.locked=document.pointerLockElement===renderer.domElement;if(state.locked){banner.style.display="none";state.inputStatus=state.pendingLockMode}else{banner.style.display="block";state.inputStatus="WAITING FOR POINTER LOCK";setBanner("&gt; CLICK TO LOCK MOUSE AND START TRAINING<br><small>LEFT CLICK AND HOLD TO SPRAY, ESC TO RELEASE POINTER LOCK</small>",false);stopShooting()}updateHud()});
+document.addEventListener("pointerlockerror",()=>{state.inputStatus="LOCK REQUEST BLOCKED";updateHud();setBanner("&gt; POINTER LOCK REQUEST FAILED<br><small>OPEN THIS PAGE DIRECTLY IN ITS OWN TAB OR WINDOW</small>",true)});
+document.addEventListener("mousemove",e=>{if(!state.locked)return;const r=radiansPerCount();state.baseYaw-=e.movementX*r;state.basePitch-=e.movementY*r;state.basePitch=clamp(state.basePitch,-Math.PI/2,Math.PI/2)});
+document.addEventListener("mousedown",e=>{if(e.button!==0)return;if(!state.locked){requestLock();return}startShooting()});
+document.addEventListener("mouseup",e=>{if(e.button===0)stopShooting()});
+window.addEventListener("resize",()=>{camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight);renderer.setPixelRatio(Math.min(window.devicePixelRatio,2))});
+syncSensitivity();resetCrosshair();switchWeapon("ak47");
+const clock=new THREE.Clock();
+function animate(){requestAnimationFrame(animate);const delta=clock.getDelta(),smooth=state.shooting?15:9;state.recoilPitch+=(state.targetPitch-state.recoilPitch)*smooth*delta;state.recoilYaw+=(state.targetYaw-state.recoilYaw)*smooth*delta;if(!state.shooting){state.targetPitch*=Math.max(0,1-delta*8);state.targetYaw*=Math.max(0,1-delta*8)}state.botFlash=Math.max(0,state.botFlash-delta*2.5);const flash=state.botFlash>0?.9:.15;botBodyMat.emissiveIntensity=flash;botHeadMat.emissiveIntensity=flash;camera.rotation.set(state.basePitch+state.recoilPitch,state.baseYaw+state.recoilYaw,0,"YXZ");renderer.render(scene,camera)}
+animate();
+</script>
 </body>
 </html>
