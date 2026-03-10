@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=900">
+    <title>TERMINAL // KINETIC SIMULATION</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --term-bg: #050505;
+            --term-green: #0f0;
+            --term-green-dim: rgba(0, 255, 0, 0.3);
+            --term-red: #f00;
+            --term-red-dim: rgba(255, 0, 0, 0.3);
+            --term-white: #e3e3e3;
+            --font-main: 'Courier Prime', Courier, monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+
+        body {
+            background-color: var(--term-bg);
+            color: var(--term-green);
+            font-family: var(--font-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            /* CRT Overlay */
+            background-image: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            text-shadow: 0 0 5px var(--term-green);
+        }
+
+        /* Scanline animation */
+        body::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        .header {
+            width: 800px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--term-green);
+            margin-bottom: 20px;
+            z-index: 10;
+        }
+
+        .header a {
+            color: var(--term-red);
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.2s;
+        }
+        
+        .header a:hover { color: var(--term-white); }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            z-index: 10;
+        }
+
+        .btn {
+            background: transparent;
+            border: 1px solid var(--term-green);
+            color: var(--term-green);
+            font-family: var(--font-main);
+            font-weight: bold;
+            padding: 5px 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+
+        .btn:hover, .btn.active {
+            background: var(--term-green);
+            color: var(--term-bg);
+            box-shadow: 0 0 10px var(--term-green);
+        }
+
+        .canvas-container {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            border: 2px solid var(--term-green-dim);
+            box-shadow: inset 0 0 20px rgba(0,255,0,0.1), 0 0 20px rgba(0,255,0,0.1);
+            background: radial-gradient(circle at center, rgba(0,255,0,0.05) 0%, transparent 70%);
+            z-index: 10;
+            cursor: crosshair;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .hud {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            text-align: right;
+            pointer-events: none;
+        }
+
+        .hud-stat {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+
+        .hud-stat span {
+            font-weight: bold;
+            color: var(--term-white);
+            text-shadow: 0 0 5px var(--term-white);
+        }
+
+        .instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            font-size: 0.9rem;
+            opacity: 0.7;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div>
+            <h1>TARGETING UPLINK // SYS_ONLINE</h1>
+            <a href="index.html">< RETURN TO DOSSIER</a>
+        </div>
+        <div class="controls">
+            <button class="btn active" data-weapon="ak47">AK-47</button>
+            <button class="btn" data-weapon="m4a4">M4A4</button>
+            <button class="btn" data-weapon="m4a1s">M4A1-S</button>
+        </div>
+    </div>
+
+    <div class="canvas-container">
+        <canvas id="simCanvas" width="800" height="600"></canvas>
+        <div class="hud">
+            <div class="hud-stat">WEAPON: <span id="hud-weapon">AK-47</span></div>
+            <div class="hud-stat">ROUNDS: <span id="hud-ammo">30</span></div>
+            <div class="hud-stat">ACCURACY: <span id="hud-acc">0.0%</span></div>
+        </div>
+        <div class="instructions">
+            > HOLD LEFT CLICK ON CENTER CROSSHAIR.<br>
+            > COUNTERACT RECOIL. PULL MOUSE.<br>
+            > RELEASE TO RESET MODULE.
+        </div>
+    </div>
+
+    <script>
+        // --- WEAPON TELEMETRY & PATTERNS ---
+        // X, Y offsets representing cumulative recoil per bullet.
+        // Scaled to fit roughly within a 600px canvas height.
+        const weapons = {
+            ak47: {
+                name: "AK-47",
+                rpm: 600, // 100ms per bullet
+                mag: 30,
+                pattern: [
+                    {x: 0, y: 0}, {x: -2, y: -25}, {x: 5, y: -50}, {x: 10, y: -75}, {x: 15, y: -100}, 
+                    {x: 20, y: -125}, {x: 28, y: -140}, {x: 35, y: -150}, {x: 40, y: -160}, {x: 40, y: -165},
+                    {x: 30, y: -170}, {x: 15, y: -175}, {x: -5, y: -175}, {x: -25, y: -170}, {x: -45, y: -165},
+                    {x: -60, y: -160}, {x: -75, y: -155}, {x: -80, y: -150}, {x: -75, y: -145}, {x: -60, y: -145},
+                    {x: -40, y: -150}, {x: -20, y: -155}, {x: 0, y: -160}, {x: 20, y: -165}, {x: 40, y: -165},
+                    {x: 60, y: -160}, {x: 75, y: -155}, {x: 85, y: -150}, {x: 90, y: -145}, {x: 95, y: -140}
+                ]
+            },
+            m4a4: {
+                name: "M4A4",
+                rpm: 666, // ~90ms per bullet
+                mag: 30,
+                pattern: [
+                    {x: 0, y: 0}, {x: 0, y: -20}, {x: 2, y: -40}, {x: 5, y: -60}, {x: 10, y: -75},
+                    {x: 15, y: -90}, {x: 22, y: -105}, {x: 30, y: -115}, {x: 35, y: -125}, {x: 40, y: -130},
+                    {x: 35, y: -135}, {x: 25, y: -140}, {x: 10, y: -140}, {x: -5, y: -140}, {x: -20, y: -135},
+                    {x: -35, y: -130}, {x: -45, y: -125}, {x: -50, y: -120}, {x: -45, y: -115}, {x: -35, y: -115},
+                    {x: -20, y: -120}, {x: -5, y: -125}, {x: 10, y: -130}, {x: 25, y: -130}, {x: 40, y: -125},
+                    {x: 55, y: -120}, {x: 65, y: -115}, {x: 70, y: -110}, {x: 75, y: -105}, {x: 80, y: -100}
+                ]
+            },
+            m4a1s: {
+                name: "M4A1-S",
+                rpm: 600, // 100ms per bullet
+                mag: 20,
+                pattern: [
+                    {x: 0, y: 0}, {x: 0, y: -15}, {x: 2, y: -30}, {x: 4, y: -45}, {x: 8, y: -60},
+                    {x: 12, y: -70}, {x: 18, y: -80}, {x: 22, y: -85}, {x: 25, y: -90}, {x: 22, y: -95},
+                    {x: 15, y: -95}, {x: 5, y: -95}, {x: -5, y: -95}, {x: -15, y: -95}, {x: -25, y: -90},
+                    {x: -30, y: -85}, {x: -32, y: -80}, {x: -28, y: -80}, {x: -20, y: -85}, {x: -10, y: -85}
+                ]
+            }
+        };
+
+        // --- ENGINE STATE ---
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2 + 100; // Shift origin down slightly
+
+        let currentWeaponKey = 'ak47';
+        let isShooting = false;
+        let bulletIndex = 0;
+        let simInterval = null;
+        let hits = 0;
+
+        let mouseStart = { x: 0, y: 0 };
+        let mouseCurrent = { x: 0, y: 0 };
+        
+        let impacts = []; // Stores {x, y, isHit}
+
+        // --- DOM ELEMENTS ---
+        const hudWeapon = document.getElementById('hud-weapon');
+        const hudAmmo = document.getElementById('hud-ammo');
+        const hudAcc = document.getElementById('hud-acc');
+        const btns = document.querySelectorAll('.btn');
+
+        // --- LOGIC ---
+        function switchWeapon(key) {
+            currentWeaponKey = key;
+            const w = weapons[key];
+            hudWeapon.textContent = w.name;
+            hudAmmo.textContent = w.mag;
+            hudAcc.textContent = "0.0%";
+            btns.forEach(b => b.classList.toggle('active', b.dataset.weapon === key));
+            resetSim();
+        }
+
+        function resetSim() {
+            clearInterval(simInterval);
+            isShooting = false;
+            bulletIndex = 0;
+            impacts = [];
+            hudAmmo.textContent = weapons[currentWeaponKey].mag;
+            drawBase();
+        }
+
+        function drawBase() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw Target Crosshair
+            ctx.strokeStyle = 'rgba(0, 255, 0, 0.5)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(cx - 20, cy); ctx.lineTo(cx + 20, cy);
+            ctx.moveTo(cx, cy - 20); ctx.lineTo(cx, cy + 20);
+            ctx.stroke();
+
+            // Draw target hit zone circle
+            ctx.beginPath();
+            ctx.arc(cx, cy, 15, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Draw impacts
+            impacts.forEach((imp, i) => {
+                ctx.fillStyle = imp.isHit ? '#fff' : '#f00';
+                ctx.beginPath();
+                ctx.arc(imp.x, imp.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Draw connecting telemetry lines
+                if (i > 0) {
+                    ctx.strokeStyle = imp.isHit ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 0, 0, 0.2)';
+                    ctx.beginPath();
+                    ctx.moveTo(impacts[i-1].x, impacts[i-1].y);
+                    ctx.lineTo(imp.x, imp.y);
+                    ctx.stroke();
+                }
+            });
+        }
+
+        function fireBullet() {
+            const w = weapons[currentWeaponKey];
+            if (bulletIndex >= w.mag) {
+                clearInterval(simInterval);
+                return;
+            }
+
+            // Calculate current compensation based on mouse drag
+            const compX = mouseCurrent.x - mouseStart.x;
+            const compY = mouseCurrent.y - mouseStart.y;
+
+            // Get recoil offset for this bullet
+            const recoil = w.pattern[bulletIndex];
+
+            // Impact point = center + recoil offset + user compensation
+            // Note: Recoil data pulls Y UP (negative). User dragging mouse DOWN (positive) counteracts it.
+            const impactX = cx + recoil.x + compX;
+            const impactY = cy + recoil.y + compY;
+
+            // Hit registration (within 15px radius of center)
+            const dist = Math.sqrt(Math.pow(impactX - cx, 2) + Math.pow(impactY - cy, 2));
+            const isHit = dist <= 15;
+            
+            if (isHit) hits++;
+
+            impacts.push({ x: impactX, y: impactY, isHit });
+            bulletIndex++;
+
+            // Update HUD
+            hudAmmo.textContent = w.mag - bulletIndex;
+            hudAcc.textContent = ((hits / bulletIndex) * 100).toFixed(1) + "%";
+
+            drawBase();
+        }
+
+        // --- INPUT HANDLING ---
+        canvas.addEventListener('mousedown', (e) => {
+            if (e.button !== 0) return; // Left click only
+            resetSim();
+            const rect = canvas.getBoundingClientRect();
+            mouseStart = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+            mouseCurrent = { ...mouseStart };
+            
+            isShooting = true;
+            hits = 0;
+            const w = weapons[currentWeaponKey];
+            
+            // Fire first bullet immediately, then interval
+            fireBullet();
+            simInterval = setInterval(fireBullet, 60000 / w.rpm);
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isShooting) return;
+            const rect = canvas.getBoundingClientRect();
+            mouseCurrent = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (isShooting) {
+                clearInterval(simInterval);
+                isShooting = false;
+            }
+        });
+
+        btns.forEach(btn => {
+            btn.addEventListener('click', (e) => switchWeapon(e.target.dataset.weapon));
+        });
+
+        // Init
+        drawBase();
+
+    </script>
+</body>
+</html>
