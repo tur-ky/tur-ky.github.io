@@ -407,27 +407,24 @@
         }
 
         // --- POINTER LOCK & RAW MOUSE INPUT ---
-        lockBanner.addEventListener('click', async () => {
+        lockBanner.addEventListener('click', () => {
+            // Force synchronous execution. Async promises strip the trusted gesture flag.
             try {
-                // Targeting the canvas element directly is safer for WebGL
-                const lockPromise = renderer.domElement.requestPointerLock();
-                if (lockPromise) {
-                    await lockPromise;
-                }
+                document.body.requestPointerLock();
             } catch (err) {
-                lockBanner.innerHTML = "> ERR: SANDBOX BLOCKED POINTER LOCK.<br><small style='font-size:1rem; color:var(--term-white)'>(OPEN SPRAY.HTML DIRECTLY IN A NEW TAB)</small>";
+                lockBanner.innerHTML = "> ERR: API REJECTED.<br><small style='font-size:1rem; color:var(--term-white)'>(CHECK BROWSER PERMISSIONS)</small>";
                 lockBanner.style.borderColor = "#ff0000";
             }
         });
 
         document.addEventListener('pointerlockchange', () => {
-            isLocked = (document.pointerLockElement === renderer.domElement || document.pointerLockElement === document.body);
+            // Simplified check: if anything is locked, we're good.
+            isLocked = !!document.pointerLockElement;
             
             if (isLocked) {
                 lockBanner.style.display = 'none';
             } else {
                 lockBanner.style.display = 'block';
-                // Reset banner text in case they exit normally
                 lockBanner.innerHTML = "> CLICK HERE TO INITIALIZE UPLINK AND LOCK MOUSE <br><small style='font-size:1rem; color:var(--term-white)'>(ESC TO DISENGAGE)</small>";
                 lockBanner.style.borderColor = "var(--term-red)";
                 stopShooting();
@@ -435,8 +432,7 @@
         });
 
         document.addEventListener('pointerlockerror', () => {
-            // Catches legacy synchronous failures
-            lockBanner.innerHTML = "> ERR: SANDBOX BLOCKED POINTER LOCK.<br><small style='font-size:1rem; color:var(--term-white)'>(OPEN SPRAY.HTML DIRECTLY IN A NEW TAB)</small>";
+            lockBanner.innerHTML = "> ERR: BROWSER BLOCKED POINTER LOCK.<br><small style='font-size:1rem; color:var(--term-white)'>(ENSURE NO IFRAMES OR OVERLAYS)</small>";
             lockBanner.style.borderColor = "#ff0000";
         });
 
