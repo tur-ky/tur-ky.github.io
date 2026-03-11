@@ -103,6 +103,30 @@ const crosshair = { up: $("c-up"), down: $("c-down"), left: $("c-left"), right: 
 
 function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
 function num(value, fallback) { const parsed = Number.parseFloat(value); return Number.isFinite(parsed) ? parsed : fallback; }
+function parseDraftNumber(value) {
+    const trimmed = String(value).trim();
+    if (!trimmed || trimmed === "-" || trimmed === "." || trimmed === "-." || /[eE+\-]$/.test(trimmed)) {
+        return null;
+    }
+    const parsed = Number(trimmed);
+    return Number.isFinite(parsed) ? parsed : null;
+}
+function readNumericDraft(input, fallback, min, max, { commit = false, integer = false } = {}) {
+    const parsed = parseDraftNumber(input.value);
+    if (!Number.isFinite(parsed)) {
+        return fallback;
+    }
+    const normalized = integer ? Math.round(parsed) : parsed;
+    if (!commit && (normalized < min || normalized > max)) {
+        return fallback;
+    }
+    return clamp(normalized, min, max);
+}
+function bindNumberInput(input, handler) {
+    input.addEventListener("input", (event) => handler({ source: event.target }));
+    input.addEventListener("change", () => handler({ commit: true }));
+    input.addEventListener("blur", () => handler({ commit: true }));
+}
 function rand(min, max) { return Math.random() * (max - min) + min; }
 function randSign() { return Math.random() < 0.5 ? -1 : 1; }
 function cm360FromSens(sens, dpi) { return (360 / (M_YAW * sens * dpi)) * 2.54; }
@@ -143,18 +167,24 @@ function hydrateStoredControls() {
     xhTStyle.checked = crosshairState.tStyle;
 }
 
-function syncSensitivity() {
-    state.dpi = clamp(Math.round(num(inpDpi.value, state.dpi)), 100, 6400);
-    inpDpi.value = String(state.dpi);
+function syncSensitivity({ commit = false, source = null } = {}) {
+    state.dpi = readNumericDraft(inpDpi, state.dpi, 100, 6400, { commit, integer: true });
     if (state.controlMode === "sens") {
-        state.sens = clamp(num(inpSens.value, state.sens), 0.01, 10);
+        state.sens = readNumericDraft(inpSens, state.sens, 0.01, 10, { commit });
         state.cm360 = cm360FromSens(state.sens, state.dpi);
     } else {
-        state.cm360 = clamp(num(inpCm.value, state.cm360), 1, 200);
+        state.cm360 = readNumericDraft(inpCm, state.cm360, 1, 200, { commit });
         state.sens = sensFromCm(state.cm360, state.dpi);
     }
-    inpSens.value = state.sens.toFixed(2);
-    inpCm.value = state.cm360.toFixed(2);
+    if (commit || source !== inpSens) {
+        inpSens.value = state.sens.toFixed(2);
+    }
+    if (commit || source !== inpDpi) {
+        inpDpi.value = String(state.dpi);
+    }
+    if (commit || source !== inpCm) {
+        inpCm.value = state.cm360.toFixed(2);
+    }
     persistSharedSettings();
 }
 
@@ -164,12 +194,14 @@ function setControlMode(mode) {
     modeCm.classList.toggle("active", state.controlMode === "cm");
     inpSens.readOnly = state.controlMode !== "sens";
     inpCm.readOnly = state.controlMode !== "cm";
-    syncSensitivity();
+    syncSensitivity({ commit: true });
 }
 
-function syncDuration() {
-    state.duration = clamp(Math.round(num(inpDuration.value, state.duration)), 5, 600);
-    inpDuration.value = String(state.duration);
+function syncDuration({ commit = false, source = null } = {}) {
+    state.duration = readNumericDraft(inpDuration, state.duration, 5, 600, { commit, integer: true });
+    if (commit || source !== inpDuration) {
+        inpDuration.value = String(state.duration);
+    }
     if (!state.running && state.runMode === "timed") {
         state.timeLeft = state.duration;
     }
@@ -704,10 +736,10 @@ function loop(now) {
 
 modeSens.addEventListener("click", () => setControlMode("sens"));
 modeCm.addEventListener("click", () => setControlMode("cm"));
-inpSens.addEventListener("input", syncSensitivity);
-inpDpi.addEventListener("input", syncSensitivity);
-inpCm.addEventListener("input", syncSensitivity);
-inpDuration.addEventListener("input", syncDuration);
+bindNumberInput(inpSens, syncSensitivity);
+bindNumberInput(inpDpi, syncSensitivity);
+bindNumberInput(inpCm, syncSensitivity);
+bindNumberInput(inpDuration, syncDuration);
 scenarioButtons.forEach((button) => button.addEventListener("click", () => setScenario(button.dataset.scenario)));
 runModeButtons.forEach((button) => button.addEventListener("click", () => setRunMode(button.dataset.mode)));
 startRunBtn.addEventListener("click", startRun);
