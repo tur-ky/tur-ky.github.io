@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=900">
+    <title>RESTRICTED // ASSETS</title>
+    
+    <link rel="icon" type="image/png" href="/number256.png">
+    <link rel="apple-touch-icon" href="/number256.png">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-main: #E3E3E3;
+            --text-main: #1B1B1B;
+            --gray-light: #ACACAC;
+            --gray-mid: #7F7F7F;
+            --gray-dark: #484848;
+            --accent-red: #E30000;
+            --red-dark: #7F0000;
+            --red-darkest: #1B0000;
+            --red-light: #E37F7F;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #050505;
+            color: var(--text-main);
+            font-family: 'Special Elite', 'Courier Prime', Courier, monospace;
+            line-height: 1.6;
+            padding: 3rem 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-image: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            background-attachment: fixed;
+            text-shadow: 0px 0px 0.8px rgba(27, 27, 27, 0.4);
+            min-height: 100vh;
+        }
+
+        ::selection {
+            background-color: var(--text-main);
+            color: #E3E3E3;
+        }
+
+        .document-wrapper {
+            background-color: var(--bg-main);
+            width: 100%;
+            max-width: 850px;
+            padding: 4rem 3rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 40px rgba(0,0,0,0.05);
+            position: relative;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 50% 50%, transparent 40%, rgba(0,0,0,0.15) 100%),
+                linear-gradient(90deg, transparent 15%, rgba(0,0,0,0.03) 16%, transparent 18%, transparent 45%, rgba(0,0,0,0.02) 46%, transparent 50%),
+                linear-gradient(rgba(172, 172, 172, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(172, 172, 172, 0.1) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 10px 10px, 10px 10px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .document-wrapper::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="1.5" numOctaves="5" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)" opacity="0.35"/%3E%3C/svg%3E');
+            pointer-events: none;
+            mix-blend-mode: multiply;
+            z-index: 10;
+        }
+
+        .document-wrapper::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            box-shadow: inset 0 0 150px rgba(0,0,0,0.65), inset 40px 0 80px rgba(0,0,0,0.4), inset -30px 0 90px rgba(0,0,0,0.3);
+            pointer-events: none;
+            z-index: 11;
+        }
+
+        .doc-header {
+            border-bottom: 2px solid var(--text-main);
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            position: relative;
+            z-index: 20;
+        }
+
+        .routing-info p {
+            margin-bottom: 0.2rem;
+        }
+
+        .terminal-link {
+            color: var(--text-main);
+            text-decoration: none;
+            display: inline-block;
+            transition: color 0.2s, text-shadow 0.2s;
+            cursor: pointer;
+        }
+        
+        .terminal-link:hover {
+            color: var(--accent-red);
+            text-shadow: 0 0 8px rgba(227, 0, 0, 0.6);
+        }
+
+        .classification-top {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            letter-spacing: 4px;
+            margin-bottom: 3rem;
+            text-transform: uppercase;
+            position: relative;
+            z-index: 20;
+        }
+
+        /* --- BOOKMARKS GRID --- */
+        .bookmarks-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            position: relative;
+            z-index: 20;
+            margin-bottom: 4rem;
+        }
+
+        .bookmark-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: rgba(172, 172, 172, 0.15);
+            border: 2px solid var(--text-main);
+            padding: 1.5rem;
+            text-decoration: none;
+            color: var(--text-main);
+            transition: all 0.15s ease-in-out;
+            min-height: 100px;
+            position: relative;
+            overflow: hidden;
+            word-break: break-all;
+        }
+
+        .bookmark-card::before {
+            content: ">";
+            position: absolute;
+            left: 1rem;
+            font-family: 'Courier Prime', monospace;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent-red);
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: all 0.2s ease;
+        }
+
+        .bookmark-card:hover {
+            background: var(--text-main);
+            color: var(--bg-main);
+            transform: scale(1.02);
+            box-shadow: 6px 6px 0px rgba(0,0,0,0.8);
+            border-color: var(--text-main);
+        }
+
+        .bookmark-card:hover::before {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .bookmark-card:hover .bookmark-title {
+            padding-left: 2rem;
+            color: var(--bg-main);
+        }
+        
+        .bookmark-card:hover .bookmark-desc {
+            padding-left: 2rem;
+            color: var(--gray-light);
+        }
+
+        .bookmark-title {
+            font-family: 'Courier Prime', monospace;
+            font-size: 1.25rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+            transition: padding 0.2s ease;
+        }
+
+        .bookmark-desc {
+            font-size: 0.75rem;
+            color: var(--gray-dark);
+            transition: padding 0.2s ease, color 0.15s ease;
+        }
+
+        /* --- FOOTER --- */
+        .doc-footer {
+            margin-top: auto;
+            border-top: 2px solid var(--text-main);
+            padding-top: 1rem;
+            font-size: 0.8rem;
+            color: var(--gray-mid);
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            z-index: 20;
+        }
+
+        @media (max-width: 600px) {
+            .bookmarks-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="document-wrapper">
+        <div class="classification-top">TACTICAL ASSETS // OVERLAY</div>
+
+        <div class="doc-header">
+            <div class="routing-info">
+                <p><strong><a href="index.html" class="terminal-link">[RETURN TO MAIN DOSSIER]</a></strong></p>
+                <p>UTILITY ENDPOINTS</p>
+            </div>
+            <div class="routing-info" style="text-align: right;">
+                <p><strong>STATUS: SECURE</strong></p>
+                <p><strong>ACCESS:</strong> CLEARED</p>
+            </div>
+        </div>
+
+        <div class="bookmarks-grid">
+            <a href="https://play.refrag.gg/" target="_self" class="bookmark-card">
+                <div class="bookmark-title">REFRAG</div>
+                <div class="bookmark-desc">https://play.refrag.gg/</div>
+            </a>
+
+            <a href="https://wiki.refrag.gg/en/creator-studio" target="_self" class="bookmark-card">
+                <div class="bookmark-title">REFRAG WIKI</div>
+                <div class="bookmark-desc">https://wiki.refrag.gg/</div>
+            </a>
+
+            <a href="https://www.warmupserver.net/servers.php" target="_self" class="bookmark-card">
+                <div class="bookmark-title">WARMUP SERVER</div>
+                <div class="bookmark-desc">https://www.warmupserver.net/</div>
+            </a>
+
+            <a href="https://totalcsgo.com/" target="_self" class="bookmark-card">
+                <div class="bookmark-title">TOTALCSGO</div>
+                <div class="bookmark-desc">https://totalcsgo.com/</div>
+            </a>
+
+            <a href="https://steamcommunity.com/market/search?appid=730" target="_self" class="bookmark-card">
+                <div class="bookmark-title">MARKET</div>
+                <div class="bookmark-desc">https://steamcommunity.com/</div>
+            </a>
+
+            <a href="https://google.com/" target="_self" class="bookmark-card">
+                <div class="bookmark-title">GOOGLE</div>
+                <div class="bookmark-desc">https://google.com/</div>
+            </a>
+        </div>
+
+        <div class="doc-footer">
+            <div>
+                MODULE: QUICK_ACCESS<br>
+                STEAM OVERLAY OPTIMIZED
+            </div>
+            <div style="text-align: right;">
+                WARNING: EXTERNAL REDIRECTS<br>
+                AUTHORIZED USER ONLY
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
