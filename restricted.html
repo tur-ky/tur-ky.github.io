@@ -154,6 +154,7 @@
             min-height: 100px;
             position: relative;
             overflow: hidden;
+            word-break: break-all;
         }
 
         .bookmark-card::before {
@@ -202,9 +203,8 @@
         }
 
         .bookmark-desc {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--gray-dark);
-            text-transform: uppercase;
             transition: padding 0.2s ease, color 0.15s ease;
         }
 
@@ -245,40 +245,34 @@
         </div>
 
         <div class="bookmarks-grid">
-            <!-- Explicit target="_self" fixes Steam Overlay opening new windows -->
             <a href="https://play.refrag.gg/" target="_self" class="bookmark-card">
-                <div class="bookmark-title">REFRAG HUB</div>
-                <div class="bookmark-desc">play.refrag.gg</div>
+                <div class="bookmark-title">REFRAG</div>
+                <div class="bookmark-desc">https://play.refrag.gg/</div>
             </a>
 
             <a href="https://wiki.refrag.gg/en/creator-studio" target="_self" class="bookmark-card">
-                <div class="bookmark-title">REFRAG CMD DOCS</div>
-                <div class="bookmark-desc">wiki.refrag.gg</div>
+                <div class="bookmark-title">REFRAG WIKI</div>
+                <div class="bookmark-desc">https://wiki.refrag.gg/</div>
             </a>
 
             <a href="https://www.warmupserver.net/servers.php" target="_self" class="bookmark-card">
-                <div class="bookmark-title">WARMUPSERVER</div>
-                <div class="bookmark-desc">Server Browser</div>
+                <div class="bookmark-title">WARMUP SERVER</div>
+                <div class="bookmark-desc">https://www.warmupserver.net/</div>
             </a>
 
             <a href="https://totalcsgo.com/" target="_self" class="bookmark-card">
-                <div class="bookmark-title">TOTAL CSGO</div>
-                <div class="bookmark-desc">Utility & Nades</div>
+                <div class="bookmark-title">TOTALCSGO</div>
+                <div class="bookmark-desc">https://totalcsgo.com/</div>
             </a>
 
             <a href="https://steamcommunity.com/market/search?appid=730" target="_self" class="bookmark-card">
-                <div class="bookmark-title">STEAM MARKET</div>
-                <div class="bookmark-desc">CS2 Filter Active</div>
+                <div class="bookmark-title">MARKET</div>
+                <div class="bookmark-desc">https://steamcommunity.com/</div>
             </a>
 
             <a href="https://google.com/" target="_self" class="bookmark-card">
                 <div class="bookmark-title">GOOGLE</div>
-                <div class="bookmark-desc">Global Search</div>
-            </a>
-
-            <a href="https://gemini.google.com/" target="_self" class="bookmark-card">
-                <div class="bookmark-title">GEMINI AI</div>
-                <div class="bookmark-desc">Tactical Overwatch</div>
+                <div class="bookmark-desc">https://google.com/</div>
             </a>
         </div>
 
